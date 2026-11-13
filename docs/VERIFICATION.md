@@ -1,12 +1,12 @@
 # Verifica Akai Ito V1
 
-Data: 13 novembre 2026. Ambiente di sviluppo Windows, Node.js 24.22.3; Docker Desktop con motore Linux AMD64. Nessun deployment sul Raspberry Pi.
+Data: 13 novembre 2026. Ambiente di sviluppo Windows, Node.js 24.22.3; Docker Desktop con motore Linux AMD64. Successivamente configurata e verificata la pipeline Jenkins sul Raspberry Pi ARM64.
 
 | Verifica                                                            | Esito                                                         |
 | ------------------------------------------------------------------- | ------------------------------------------------------------- |
 | TypeScript strict: shared, API, frontend, test e script             | Superata                                                      |
 | ESLint                                                              | Superata                                                      |
-| Vitest / Fastify inject                                             | **31 test superati**, 0 falliti                               |
+| Vitest / Fastify inject                                             | **34 test superati**, 0 falliti                               |
 | Build Vite frontend e TypeScript backend                            | Superate                                                      |
 | `npm audit` (incluse dipendenze di sviluppo)                        | **0 vulnerabilità segnalate**                                 |
 | Validazione Docker Compose                                          | Superata                                                      |
@@ -19,9 +19,10 @@ Data: 13 novembre 2026. Ambiente di sviluppo Windows, Node.js 24.22.3; Docker De
 | Sintassi POSIX degli script di backup/ripristino (`sh -n`)          | Superata                                                      |
 | Build Linux ARM64 e smoke completo in emulazione                    | Superati                                                      |
 | Verifica visiva interattiva desktop/mobile                          | Non eseguita: collegamento browser/computer use indisponibile |
-| Prova su Raspberry Pi e smartphone fisici                           | Non eseguita                                                  |
+| Pipeline nativa sul Raspberry Pi ARM64 e HTTPS pubblico             | Superata, Jenkins build #1 SUCCESS                             |
+| Prova su smartphone fisico                                          | Non eseguita                                                  |
 
-I 31 test API comprendono i dodici flussi richiesti: login, accesso non autenticato, creazione, modifica, conflitto, eliminazione/ripristino, upload valido, rifiuto di file non validi, protezione delle immagini, commenti, permessi sui commenti e ordinamento cronologico. Coprono inoltre origini/CSRF, logout, cookie, rate limiting, avatar, JPEG/PNG/WebP, limiti configurabili, ripulitura di upload parziali, concorrenza effettiva, percorso dei media, album, impostazioni, cambio password, giorni civili e pulizia dopo 30 giorni.
+I 34 test API comprendono i dodici flussi richiesti: login, accesso non autenticato, creazione, modifica, conflitto, eliminazione/ripristino, upload valido, rifiuto di file non validi, protezione delle immagini, commenti, permessi sui commenti e ordinamento cronologico. Coprono inoltre origini/CSRF, alias locali e controllo esatto in produzione, logout, cookie, rate limiting, avatar, JPEG/PNG/WebP, limiti configurabili, ripulitura di upload parziali, concorrenza effettiva, percorso dei media, album, impostazioni, cambio password, giorni civili e pulizia dopo 30 giorni.
 
 Lo smoke Docker usa richieste HTTP reali, credenziali casuali e volumi temporanei separati. Controlla due login, upload di un’immagine, lettura dal secondo account, accesso anonimo negato, commento, riavvio, frontend SPA, asset statici e cache. Ferma poi l’app, archivia database e media insieme, ripristina in un nuovo volume e verifica integrità SQLite, relazioni, presenza dei file e conteggi di ricordi/foto/commenti. Le risorse QA vengono rimosse al termine.
 

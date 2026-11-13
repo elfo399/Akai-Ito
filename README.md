@@ -258,7 +258,7 @@ Lo stato delle verifiche eseguite in questa implementazione è riportato in [doc
 6. Riavviare con `docker compose restart app` e verificare i contenuti, anche da smartphone.
 7. Predisporre backup con una prova di ripristino e la pulizia periodica del cestino.
 
-Il progetto viene preparato localmente: nessun deployment sul Raspberry è stato effettuato.
+Il deploy automatico sul Raspberry è configurato tramite Jenkins e verificato con un push reale su GitHub. Vedere [docs/JENKINS.md](docs/JENKINS.md) per URL, percorsi e prima inizializzazione degli account.
 
 ## Deploy automatico con Jenkins
 

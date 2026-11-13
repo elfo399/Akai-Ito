@@ -14,7 +14,7 @@ La pipeline usa Jenkins su `https://jenkins.elfo3.dev/`, il repository `elfo399/
 
 Il volume non viene eliminato. `.env` resta sul Raspberry, fuori dal workspace Jenkins e dal repository. Il primo avvio mantiene l’inizializzazione interattiva dei due account prevista dal README.
 
-## Configurazione da completare sul server
+## Configurazione sul server
 
 - Jenkins controller con accesso autenticato; build eseguite su un agent dedicato, non sul controller.
 - Agent Linux ARM64 sul Raspberry con etichette `raspberry-pi` e `docker`, Git, Java richiesto dalla versione Jenkins, Docker e Compose v2. Viene riutilizzato l’agent `orio-raspberry-pi`; la chiave SSH e la verifica della host key rimangono quelle già configurate.
@@ -25,6 +25,37 @@ Il volume non viene eliminato. `.env` resta sul Raspberry, fuori dal workspace J
 - Webhook GitHub con evento `push`, URL dell’endpoint previsto dalla versione del plugin (`/github-webhook/`), HTTPS e secret configurato coerentemente nei due servizi. Verificare una consegna reale in GitHub e l’avvio della build in Jenkins. Se Jenkins non è raggiungibile da GitHub, scegliere la soluzione dopo aver controllato rete/proxy esistenti.
 
 Non è necessario un registry: l’immagine viene costruita direttamente sul Raspberry e resta nel suo Docker. Gli accessi Docker consentono di amministrare l’host; l’agent e i branch eseguiti devono essere fidati.
+
+## Prima configurazione e utilizzo
+
+Job: [Akai-Ito](https://jenkins.elfo3.dev/job/Akai-Ito/). Un push su `main` avvia automaticamente controlli e deploy. Il primo deploy è stato verificato con la build [#1](https://jenkins.elfo3.dev/job/Akai-Ito/1/), avviata da un evento GitHub push e terminata con `SUCCESS` dopo 34 test superati. Sono stati verificati HTTPS pubblico (home e healthcheck HTTP 200), accesso anonimo negato alle impostazioni (HTTP 401) e integrità del database sul Raspberry.
+
+Il diario di produzione è vuoto e i due account vengono inizializzati una sola volta. Da una sessione SSH come `elfo`:
+
+```sh
+docker exec -it akai-ito-app-1 node apps/api/dist/cli.js init-users
+```
+
+Il comando chiede nomi e password nascoste; non serve inserirle nel repository, in Jenkins o nella chat. I deploy successivi conservano account, foto e ricordi.
+
+File operativi sul server:
+
+```text
+/home/elfo/services/akai-ito/.env                Configurazione privata
+/home/elfo/services/akai-ito/compose.proxy.yml   Rete proxy-net e alias akai-ito
+/home/elfo/services/akai-ito/docker-compose.yml Copia della configurazione distribuita
+/home/elfo/services/akai-ito/current-image      Tag dell’immagine attualmente distribuita
+/home/elfo/services/akai-ito/backups/            Backup prima degli aggiornamenti
+```
+
+Per operazioni Compose manuali, impostare l’immagine salvata e includere l’override del proxy:
+
+```sh
+cd /home/elfo/services/akai-ito
+APP_IMAGE="$(cat current-image)" docker compose -p akai-ito -f docker-compose.yml -f compose.proxy.yml ps
+```
+
+L’HTTP interno è pubblicato soltanto su `127.0.0.1:13000`; l’app usa HTTPS tramite il proxy su `https://akaiito.elfo3.dev`. Il volume persistente è `akai-ito_diary-data`.
 
 ## Note operative
 

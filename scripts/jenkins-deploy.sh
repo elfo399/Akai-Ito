@@ -79,5 +79,9 @@ fi
 
 APP_IMAGE="$image" compose up -d --no-build --pull never --wait --wait-timeout 180 app
 APP_IMAGE="$image" compose exec -T app node apps/api/dist/cli.js verify
-printf '%s\n' "$image" > "$deploy_dir/current-image"
+# Keep a recovery copy outside the disposable Jenkins workspace.
+cp docker-compose.yml "$deploy_dir/docker-compose.yml.tmp"
+mv "$deploy_dir/docker-compose.yml.tmp" "$deploy_dir/docker-compose.yml"
+printf '%s\n' "$image" > "$deploy_dir/current-image.tmp"
+mv "$deploy_dir/current-image.tmp" "$deploy_dir/current-image"
 printf 'Deploy verificato: %s\n' "$image"
