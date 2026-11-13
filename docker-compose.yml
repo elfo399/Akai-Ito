@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    image: ${APP_IMAGE:-akai-ito:local}
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATA_DIR: /app/data
+      APP_ORIGIN: ${APP_ORIGIN:?Impostare APP_ORIGIN nel file .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      MAX_UPLOAD_FILES: ${MAX_UPLOAD_FILES:-20}
+      MAX_IMAGE_MB: ${MAX_IMAGE_MB:-15}
+    volumes:
+      - diary-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Only versioned, additive, reviewed SQL migrations run on startup.
+    command:
+      [
+        "sh",
+        "-c",
+        "node apps/api/dist/cli.js migrate && exec node apps/api/dist/server.js",
+      ]
+
+volumes:
+  diary-data:

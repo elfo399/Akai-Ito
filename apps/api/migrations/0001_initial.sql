@@ -1,0 +1,11 @@
+CREATE TABLE users (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, name TEXT NOT NULL, password TEXT NOT NULL, avatar TEXT);
+CREATE TABLE session (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, csrf TEXT NOT NULL, expires INTEGER NOT NULL);
+CREATE TABLE couple_settings (id INTEGER PRIMARY KEY CHECK(id=1), couple_names TEXT NOT NULL DEFAULT '', start_date TEXT, cover TEXT);
+INSERT INTO couple_settings(id) VALUES(1);
+CREATE TABLE memories (id TEXT PRIMARY KEY, title TEXT NOT NULL, event_date TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', category TEXT NOT NULL, location TEXT NOT NULL DEFAULT '', author_id TEXT NOT NULL REFERENCES users(id), version INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, deleted_at TEXT);
+CREATE INDEX memories_date ON memories(event_date);
+CREATE INDEX memories_category ON memories(category);
+CREATE TABLE memory_media (id TEXT PRIMARY KEY, memory_id TEXT NOT NULL REFERENCES memories(id) ON DELETE CASCADE, position INTEGER NOT NULL, is_cover INTEGER NOT NULL DEFAULT 0, original TEXT NOT NULL, display TEXT NOT NULL, thumb TEXT NOT NULL);
+CREATE INDEX media_memory ON memory_media(memory_id);
+CREATE TABLE comments (id TEXT PRIMARY KEY, memory_id TEXT NOT NULL REFERENCES memories(id) ON DELETE CASCADE, author_id TEXT NOT NULL REFERENCES users(id), body TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE INDEX comments_memory ON comments(memory_id);

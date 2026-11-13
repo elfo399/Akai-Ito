@@ -1,0 +1,47 @@
+{
+  "name": "akai-ito",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  },
+  "scripts": {
+    "predev": "npm run build -w @akai/shared",
+    "pretest": "npm run build -w @akai/shared",
+    "premigrate": "npm run build -w @akai/shared",
+    "preinit-users": "npm run build -w @akai/shared",
+    "prepurge": "npm run build -w @akai/shared",
+    "preverify-data": "npm run build -w @akai/shared",
+    "dev": "node --env-file-if-exists=.env node_modules/concurrently/dist/bin/concurrently.js -k \"npm run dev -w @akai/api\" \"npm run dev -w @akai/web\"",
+    "build": "npm run build -w @akai/shared && npm run build -w @akai/web && npm run build -w @akai/api",
+    "typecheck": "tsc --noEmit -p packages/shared && tsc --noEmit -p apps/api && tsc --noEmit -p apps/web && tsc -p tsconfig.tools.json",
+    "format": "prettier --write apps packages scripts *.json *.js *.ts *.yml README.md docs --ignore-path .gitignore",
+    "test:docker": "node --import tsx scripts/docker-smoke.ts",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "start": "node --env-file-if-exists=.env apps/api/dist/server.js",
+    "migrate": "node --env-file-if-exists=.env --import tsx apps/api/src/cli.ts migrate",
+    "init-users": "node --env-file-if-exists=.env --import tsx apps/api/src/cli.ts init-users",
+    "purge": "node --env-file-if-exists=.env --import tsx apps/api/src/cli.ts purge",
+    "verify-data": "node --env-file-if-exists=.env --import tsx apps/api/src/cli.ts verify"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.10.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.14.0",
+    "prettier": "^3.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^5.1.0"
+  }
+}

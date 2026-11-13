@@ -1,0 +1,12 @@
+services:
+  app:
+    networks:
+      default: {}
+      proxy-net:
+        aliases:
+          - akai-ito
+
+networks:
+  proxy-net:
+    external: true
+    name: proxy-net
