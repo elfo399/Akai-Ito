@@ -45,6 +45,7 @@ Frontend: `Albums.tsx`, `CollectionForm.tsx`, `CollectionPicker.tsx`, campo nell
 - Stagioni: carta colorata più chiaramente, bordo e badge con nome/icona. Data del ricordo e preferenza centralizzata invariati; non si applicano filtri stagionali alle foto.
 - Rifinitura successiva: etichette stagionali compatte senza riquadro, allineate alla data nelle card e raccolte con autore/luogo nel dettaglio. La voce Album è attiva anche nel dettaglio e nell'editor dei ricordi; Timeline rimane attiva nella sua pagina.
 - Pulsanti del ricordo compatti: altezza 34 px su desktop e target touch di 44 px, icone ridotte, barra Sfoglia più bassa e invio commento allineato al campo senza pulsante a tutta larghezza su telefono.
+- Stile uniforme per gli stessi comandi: identico fondo beige opaco, testo bruno, bordo sottile, angoli da 8 px e hover coerente anche per secondarie e icone. Niente sottolineature o accenti laterali. Dimensioni, etichette e comportamento invariati.
 - Gli effetti restano disabilitati con preferenze ridotte/disattivate e con `prefers-reduced-motion`. Cinema, viaggio sulla mappa, intro e parallasse mantengono il comportamento precedente.
 
 Gli interventi visivi sono in `refinements.css`, caricato dopo i fogli esistenti. I token restano in `experience.ts`; gli observer sono in `motion.tsx`.

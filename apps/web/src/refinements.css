@@ -454,6 +454,10 @@
 /* Compact actions in the memory page; touch targets keep their own spacing. */
 .detail-page {
   --memory-control-height: 34px;
+  --memory-action-bg: #f0e4d8;
+  --memory-action-border: #d3beac;
+  --memory-action-ink: #60483f;
+  --memory-action-hover: #e5d2c0;
 }
 .detail-page
   :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
@@ -463,7 +467,40 @@
   gap: 6px;
   font-size: 11px;
   line-height: 1.4;
+  color: var(--memory-action-ink);
+  background: var(--memory-action-bg);
+  border: 1px solid var(--memory-action-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px #59443f0a;
+  text-decoration: none;
+}
+.detail-page
+  :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
+  .button:not(:disabled):hover {
+  color: var(--memory-action-ink);
+  background: var(--memory-action-hover);
+  border-color: #b99b83;
+}
+.detail-page
+  :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
+  .button:not(:disabled):active {
+  transform: translateY(1px);
+}
+.detail-page
+  :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
+  .button:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+.detail-page
+  :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
+  :is(.button, .icon-button):disabled {
+  color: var(--memory-action-ink);
+  background: var(--memory-action-bg);
+  border-color: var(--memory-action-border);
   box-shadow: none;
+  transform: none;
+  opacity: 0.45;
 }
 .detail-page
   :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
@@ -476,6 +513,18 @@
 .detail-page :is(.diary-browser, .detail-tools) .icon-button {
   min-width: var(--memory-control-height);
   min-height: var(--memory-control-height);
+  color: var(--memory-action-ink);
+  background: var(--memory-action-bg);
+  border: 1px solid var(--memory-action-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px #59443f0a;
+}
+.detail-page
+  :is(.diary-browser, .detail-tools)
+  .icon-button:not(:disabled):hover {
+  color: var(--memory-action-ink);
+  background: var(--memory-action-hover);
+  border-color: #b99b83;
 }
 .detail-page :is(.diary-browser, .detail-tools) .icon-button svg {
   width: 16px;
@@ -484,6 +533,10 @@
 .detail-page .diary-browser {
   padding: 8px 12px;
   gap: 10px;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  box-shadow: none;
 }
 .detail-page .diary-browser > .handwritten {
   flex: 1;
