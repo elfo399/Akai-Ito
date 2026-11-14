@@ -13,10 +13,12 @@ import {
   LogOut,
   LoaderCircle,
   RefreshCcw,
+  Globe2,
 } from "lucide-react";
 import { useAuth } from "./auth";
 import { formatDate, photoUrl } from "./api";
 import type { MemoryCardData } from "./types";
+import { ThreadMark, WashiTape } from "./scrapbook";
 export function Thread({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -33,11 +35,10 @@ export function Logo() {
   return (
     <Link to="/" className="brand" aria-label="Akai Ito, home">
       <span className="brand-mark">
-        赤い糸
-        <Thread />
+        <ThreadMark />
       </span>
       <span className="brand-letters">
-        AKAI ITO<small>Il diario del nostro filo rosso.</small>
+        AKAI ITO<small>赤い糸 · Il nostro filo rosso</small>
       </span>
     </Link>
   );
@@ -46,12 +47,24 @@ const links = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/timeline", icon: BookHeart, label: "Timeline" },
   { to: "/albums", icon: Images, label: "Album" },
+  { to: "/world", icon: Globe2, label: "Il nostro mondo" },
   { to: "/settings", icon: Settings, label: "Impostazioni" },
 ];
 export function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const [logoutError, setLogoutError] = useTransientError();
+  const isActive = (to: string) =>
+    to === "/"
+      ? pathname === "/"
+      : pathname.startsWith(to) ||
+        (to === "/timeline" && pathname.startsWith("/memories")) ||
+        (to === "/settings" && pathname === "/trash");
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+    const main = document.getElementById("content");
+    main?.focus({ preventScroll: true });
+  }, [pathname]);
   return (
     <>
       <a className="skip" href="#content">
@@ -61,7 +74,12 @@ export function Layout({ children }: { children: ReactNode }) {
         <Logo />
         <nav className="desktop-nav" aria-label="Navigazione principale">
           {links.map(({ to, icon: Icon, label }) => (
-            <Link key={to} to={to} className={pathname === to ? "active" : ""}>
+            <Link
+              key={to}
+              to={to}
+              className={isActive(to) ? "active" : ""}
+              aria-current={isActive(to) ? "page" : undefined}
+            >
               <Icon size={16} />
               {label}
             </Link>
@@ -87,14 +105,21 @@ export function Layout({ children }: { children: ReactNode }) {
           {logoutError}
         </p>
       )}
-      <main id="content">{children}</main>
+      <main id="content" tabIndex={-1}>
+        {children}
+      </main>
       <footer>
         <span>赤い糸</span> Ogni ricordo è un nodo nel filo che ci unisce.
         <Heart size={14} />
       </footer>
       <nav className="mobile-nav" aria-label="Navigazione mobile">
         {links.map(({ to, icon: Icon, label }) => (
-          <Link key={to} to={to} className={pathname === to ? "active" : ""}>
+          <Link
+            key={to}
+            to={to}
+            className={isActive(to) ? "active" : ""}
+            aria-current={isActive(to) ? "page" : undefined}
+          >
             <Icon size={21} />
             <span>{label}</span>
           </Link>
@@ -206,7 +231,7 @@ export function Empty({
 export function MemoryCard({ memory }: { memory: MemoryCardData }) {
   return (
     <Link to={`/memories/${memory.id}`} className="memory-card polaroid">
-      <span className="tape" />
+      <WashiTape rose />
       <div className="photo-frame">
         {memory.coverId ? (
           <img
@@ -232,10 +257,14 @@ export function MemoryCard({ memory }: { memory: MemoryCardData }) {
         <div className="card-meta">
           <span>Di {memory.author}</span>
           <span>
-            <ImageIcon size={13} />
-            {memory.photoCount}
-            <MessageCircle size={13} />
-            {memory.commentCount}
+            <ImageIcon size={14} aria-hidden="true" />
+            <span aria-label={`${memory.photoCount} fotografie`}>
+              {memory.photoCount}
+            </span>
+            <MessageCircle size={14} aria-hidden="true" />
+            <span aria-label={`${memory.commentCount} commenti`}>
+              {memory.commentCount}
+            </span>
           </span>
         </div>
       </div>
@@ -254,12 +283,15 @@ export function Dialog({
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const el = ref.current!;
+    const opener = document.activeElement;
     el.showModal();
     const bodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       el.close();
       document.body.style.overflow = bodyOverflow;
+      if (opener instanceof HTMLElement && opener.isConnected)
+        opener.focus({ preventScroll: true });
     };
   }, []);
   return (

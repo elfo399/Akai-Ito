@@ -15,6 +15,7 @@ Un diario fotografico privato per due persone. Ricordi, fotografie e pensieri so
 - Galleria con visualizzatore, frecce, tastiera, swipe e download dell’originale.
 - Commenti condivisi; modifica ed eliminazione riservate all’autore.
 - Album automatici per categoria, senza duplicare i file, con collegamenti ai ricordi.
+- **Il nostro mondo**: mappa fotografica privata, timeline, riproduzione della storia, EXIF e posizioni manuali. [Utilizzo, API e importazione dei metadati](docs/WORLD.md).
 - Impostazioni condivise e profilo personale con avatar.
 - Cestino, ripristino e cancellazione definitiva con conferma esplicita.
 - Design scrapbook mobile first: carta crema, Polaroid, washi tape, font locali e filo rosso SVG. Rispetto di `prefers-reduced-motion`, dialoghi nativi con gestione del focus e navigazione mobile.

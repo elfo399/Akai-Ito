@@ -11,8 +11,8 @@ import {
   ErrorState,
   Empty,
   MemoryCard,
-  Thread,
 } from "../components";
+import { TimelineThread, StoryEnding } from "../scrapbook";
 export default function Timeline() {
   const [order, setOrder] = useState("desc"),
     [year, setYear] = useState(""),
@@ -94,13 +94,13 @@ export default function Timeline() {
       ) : (
         <>
           <div className="timeline">
-            <div className="timeline-thread" aria-hidden="true" />
+            <TimelineThread />
             {query.data.items.map((m, i) => (
               <div
                 key={m.id}
                 className={"timeline-entry " + (i % 2 ? "right" : "left")}
               >
-                <span className="thread-knot">
+                <span className="thread-knot" aria-hidden="true">
                   <Heart size={12} />
                 </span>
                 {(i === 0 ||
@@ -112,16 +112,13 @@ export default function Timeline() {
               </div>
             ))}
           </div>
+          <StoryEnding />
           <Pagination
             page={page}
             total={query.data.total}
             size={20}
             onChange={setPage}
           />
-          <div className="thread-ending">
-            <Thread />
-            <p className="handwritten">E il nostro filo continua…</p>
-          </div>
         </>
       )}
     </div>

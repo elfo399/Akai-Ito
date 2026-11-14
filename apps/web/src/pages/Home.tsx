@@ -12,6 +12,7 @@ import {
   MemoryCard,
   Empty,
 } from "../components";
+import { PaperCard, WashiTape } from "../scrapbook";
 export default function Home() {
   const settings = useQuery({
     queryKey: ["settings"],
@@ -37,8 +38,13 @@ export default function Home() {
     s.coupleNames || settings.data!.users.map((u) => u.name).join(" & ");
   return (
     <div className="home">
+      <div className="diary-label">
+        <span>UN DIARIO DA SCRIVERE IN DUE</span>
+        <span>RICORDI, NON COSE.</span>
+      </div>
       <section className="cover-section">
-        <div className="cover-copy">
+        <PaperCard className="cover-copy">
+          <WashiTape />
           <span className="eyebrow">
             <span className="little-line" /> LA NOSTRA STORIA, UNA PAGINA ALLA
             VOLTA
@@ -59,8 +65,8 @@ export default function Home() {
               <Heart size={20} strokeWidth={1.3} />
               <div>
                 <strong>
-                  {daysTogether(s.startDate).toLocaleString("it-IT")} giorni
-                  insieme
+                  <b>{daysTogether(s.startDate).toLocaleString("it-IT")}</b>{" "}
+                  giorni insieme
                 </strong>
                 <span>
                   Il nostro filo si è intrecciato il {formatDate(s.startDate)}
@@ -78,11 +84,14 @@ export default function Home() {
             </Link>
           )}
           <AddMemory />
-        </div>
+          <span className="letter-signature handwritten">
+            Con te, un giorno alla volta.
+          </span>
+        </PaperCard>
         <div className="cover-art">
           <span className="vertical-note">momenti da tenere stretti</span>
           <div className="cover-polaroid polaroid">
-            <span className="tape" />
+            <WashiTape rose />
             {s.cover ? (
               <img
                 src={photoUrl(s.cover, "display")}
@@ -109,10 +118,21 @@ export default function Home() {
           </span>
         </div>
       </section>
+      <nav className="diary-index" aria-label="Sfoglia il diario">
+        <a href="#recent">
+          <span>01</span> Le ultime pagine <ArrowRight size={17} />
+        </a>
+        <Link to="/timeline">
+          <span>02</span> Il filo dei ricordi <ArrowRight size={17} />
+        </Link>
+        <Link to="/albums">
+          <span>03</span> Le nostre fotografie <ArrowRight size={17} />
+        </Link>
+      </nav>
       <div className="section-divider">
         <span /> <Heart size={14} strokeWidth={1} /> <span />
       </div>
-      <section className="recent-section">
+      <section className="recent-section" id="recent">
         <div className="section-heading">
           <div>
             <span className="eyebrow">DA CONSERVARE, DA RIVIVERE</span>

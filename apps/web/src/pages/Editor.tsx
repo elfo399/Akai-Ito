@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Save,
+  LoaderCircle,
 } from "lucide-react";
 import { api, ApiError, photoUrl } from "../api";
 import type { Memory, Settings } from "../types";
@@ -60,6 +61,8 @@ function EditorForm({ initial }: { initial?: Memory }) {
     [error, setError] = useState(""),
     [conflict, setConflict] = useState(false),
     [saved, setSaved] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [leaving, setLeaving] = useState<string | null>(null);
   const urls = useRef<string[]>([]);
   const {
     register,
@@ -85,6 +88,34 @@ function EditorForm({ initial }: { initial?: Memory }) {
     };
     window.addEventListener("beforeunload", guard);
     return () => window.removeEventListener("beforeunload", guard);
+  }, [isDirty, saved]);
+  useEffect(() => {
+    const guardLink = (event: MouseEvent) => {
+      if (
+        saved ||
+        !(isDirty || photoDirty.current) ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      const anchor =
+        event.target instanceof Element ? event.target.closest("a") : null;
+      if (!anchor || anchor.target || anchor.hasAttribute("download")) return;
+      const url = new URL(anchor.href);
+      if (
+        url.origin !== location.origin ||
+        (url.pathname === location.pathname && url.hash)
+      )
+        return;
+      event.preventDefault();
+      event.stopPropagation();
+      setLeaving(url.pathname + url.search + url.hash);
+    };
+    document.addEventListener("click", guardLink, true);
+    return () => document.removeEventListener("click", guardLink, true);
   }, [isDirty, saved]);
   const choose = (files: FileList | null) => {
     if (!files) return;
@@ -145,6 +176,7 @@ function EditorForm({ initial }: { initial?: Memory }) {
       />
       <form
         className="editor-layout"
+        aria-busy={isSubmitting}
         onSubmit={handleSubmit(async (memory) => {
           setError("");
           const form = new FormData();
@@ -182,18 +214,21 @@ function EditorForm({ initial }: { initial?: Memory }) {
           }
         })}
       >
-        <section className="paper form-paper">
+        <fieldset className="paper form-paper" disabled={isSubmitting}>
+          <legend className="sr-only">Le parole del ricordo</legend>
           <span className="corner-label handwritten">le parole</span>
           <label>
             Un titolo per questo momento *
             <input
               autoFocus
               maxLength={160}
+              aria-invalid={!!errors.title}
+              aria-describedby={errors.title ? "title-error" : undefined}
               placeholder="Come chiameremo questo ricordo?"
               {...register("title")}
             />
             {errors.title && (
-              <span className="field-error">
+              <span className="field-error" id="title-error" role="alert">
                 Il titolo è obbligatorio (massimo 160 caratteri).
               </span>
             )}
@@ -201,9 +236,16 @@ function EditorForm({ initial }: { initial?: Memory }) {
           <div className="form-row">
             <label>
               Quando è successo? *
-              <input type="date" {...register("eventDate")} />
+              <input
+                type="date"
+                aria-invalid={!!errors.eventDate}
+                aria-describedby={errors.eventDate ? "date-error" : undefined}
+                {...register("eventDate")}
+              />
               {errors.eventDate && (
-                <span className="field-error">Scegli una data valida.</span>
+                <span className="field-error" id="date-error" role="alert">
+                  Scegli una data valida.
+                </span>
               )}
             </label>
             <label>
@@ -232,17 +274,33 @@ function EditorForm({ initial }: { initial?: Memory }) {
               {...register("description")}
             />
           </label>
-        </section>
-        <section className="paper form-paper photo-editor">
+        </fieldset>
+        <fieldset
+          className="paper form-paper photo-editor"
+          disabled={isSubmitting}
+        >
+          <legend className="sr-only">Le fotografie del ricordo</legend>
           <span className="corner-label handwritten">le fotografie</span>
           <h2>Frammenti di quel giorno</h2>
           <p>
             La stella sceglie la copertina. Le frecce riordinano i nostri
             momenti.
           </p>
-          <label className="upload-zone">
+          <label
+            className={"upload-zone " + (dragging ? "is-dragging" : "")}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              if (!isSubmitting) choose(e.dataTransfer.files);
+            }}
+          >
             <ImagePlus size={32} strokeWidth={1} />
-            <strong>Aggiungi le fotografie</strong>
+            <strong>Scegli o trascina qui le fotografie</strong>
             <span>
               JPEG, PNG o WebP · fino a {limits.maxFiles} foto,{" "}
               {limits.maxImageMB} MB ciascuna
@@ -257,6 +315,11 @@ function EditorForm({ initial }: { initial?: Memory }) {
               }}
             />
           </label>
+          <p className="photo-count" role="status">
+            {photos.length
+              ? `${photos.length} fotografie da custodire`
+              : "Anche una sola fotografia può raccontare tutto."}
+          </p>
           <div className="upload-previews">
             {photos.map((p, i) => (
               <div
@@ -266,6 +329,14 @@ function EditorForm({ initial }: { initial?: Memory }) {
                 key={p.key}
               >
                 <img src={p.url} alt={"Fotografia " + (i + 1)} />
+                <div className="preview-caption">
+                  <span>{String(i + 1).padStart(2, "0")}</span>
+                  {cover === p.key && (
+                    <span>
+                      <Star size={12} aria-hidden="true" /> Copertina
+                    </span>
+                  )}
+                </div>
                 <div className="photo-actions">
                   <button
                     type="button"
@@ -284,7 +355,7 @@ function EditorForm({ initial }: { initial?: Memory }) {
                   <button
                     type="button"
                     disabled={i === 0}
-                    aria-label="Sposta prima"
+                    aria-label={`Sposta foto ${i + 1} prima`}
                     onClick={() => move(i, -1)}
                   >
                     <ArrowLeft size={15} />
@@ -292,14 +363,14 @@ function EditorForm({ initial }: { initial?: Memory }) {
                   <button
                     type="button"
                     disabled={i === photos.length - 1}
-                    aria-label="Sposta dopo"
+                    aria-label={`Sposta foto ${i + 1} dopo`}
                     onClick={() => move(i, 1)}
                   >
                     <ArrowRight size={15} />
                   </button>
                   <button
                     type="button"
-                    aria-label="Rimuovi foto"
+                    aria-label={`Rimuovi foto ${i + 1}`}
                     onClick={() => {
                       photoDirty.current = true;
                       setPhotos(photos.filter((v) => v.key !== p.key));
@@ -315,7 +386,7 @@ function EditorForm({ initial }: { initial?: Memory }) {
               </div>
             ))}
           </div>
-        </section>
+        </fieldset>
         <div className="editor-footer">
           {error && (
             <p className="error" role="alert">
@@ -325,14 +396,53 @@ function EditorForm({ initial }: { initial?: Memory }) {
           <span className="tiny">
             * Campi obbligatori · Questo ricordo sarà di entrambi.
           </span>
+          <span className="save-status" role="status">
+            {isSubmitting
+              ? "Salvataggio e caricamento delle foto in corso…"
+              : isDirty || photoDirty.current
+                ? "Modifiche non salvate"
+                : "Una pagina tutta da scrivere"}
+          </span>
           <button className="button" disabled={isSubmitting}>
-            <Save size={17} />
+            {isSubmitting ? (
+              <LoaderCircle size={17} className="spin" />
+            ) : (
+              <Save size={17} />
+            )}
             {isSubmitting
               ? "Custodisco il ricordo…"
               : "Salva il nostro ricordo"}
           </button>
         </div>
       </form>
+      {leaving && (
+        <Dialog
+          title="Lasciamo questa pagina?"
+          onClose={() => setLeaving(null)}
+        >
+          <p>
+            Ci sono modifiche non salvate. Se esci, le parole e le fotografie
+            aggiunte in questa pagina andranno perse.
+          </p>
+          <div className="dialog-actions">
+            <button
+              className="button secondary"
+              onClick={() => setLeaving(null)}
+            >
+              Continua a scrivere
+            </button>
+            <button
+              className="button"
+              onClick={() => {
+                setSaved(true);
+                navigate(leaving);
+              }}
+            >
+              Esci senza salvare
+            </button>
+          </div>
+        </Dialog>
+      )}
       {conflict && (
         <Dialog
           title="Questa pagina è cambiata"

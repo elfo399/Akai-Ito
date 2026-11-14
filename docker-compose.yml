@@ -15,6 +15,10 @@ services:
       TRUST_PROXY: ${TRUST_PROXY:-false}
       MAX_UPLOAD_FILES: ${MAX_UPLOAD_FILES:-20}
       MAX_IMAGE_MB: ${MAX_IMAGE_MB:-15}
+      MAP_TILE_URL: ${MAP_TILE_URL:-}
+      MAP_ATTRIBUTION: ${MAP_ATTRIBUTION:-© OpenStreetMap contributors}
+      MAP_ATTRIBUTION_URL: ${MAP_ATTRIBUTION_URL:-https://www.openstreetmap.org/copyright}
+      MAP_MAX_ZOOM: ${MAP_MAX_ZOOM:-19}
     volumes:
       - diary-data:/app/data
     read_only: true

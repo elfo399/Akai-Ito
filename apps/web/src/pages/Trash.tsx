@@ -86,7 +86,8 @@ export default function Trash() {
                   Ripristina
                 </button>
                 <button
-                  className="icon-button"
+                  className="icon-button danger"
+                  disabled={busy}
                   aria-label={"Elimina definitivamente " + m.title}
                   onClick={() => {
                     setSelected(m);

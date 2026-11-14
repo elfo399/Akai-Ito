@@ -1,4 +1,5 @@
 import { z } from "zod";
+export * from "./world.js";
 export const categories = [
   "Appuntamenti",
   "Viaggi",

@@ -94,7 +94,7 @@ function AlbumDetail({ category }: { category: string }) {
       ) : !query.data.items.length ? (
         <Empty
           title="Un album pronto a riempirsi."
-          text="Le fotografie dei ricordi di questa categoria compariranno qui, senza duplicare i file."
+          text="Le fotografie dei ricordi di questo capitolo troveranno posto qui. Una piccola collezione da sfogliare insieme."
         />
       ) : (
         <>

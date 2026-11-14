@@ -10,6 +10,7 @@ import argon2 from "argon2";
 import { z } from "zod";
 import { passwordInput } from "@akai/shared";
 import { dataDirectory } from "./config.js";
+import { importPhotoMetadata } from "./import-photo-metadata.js";
 export async function initializeUsers(
   db: ReturnType<typeof openDb>["db"],
   inputs: { username: string; name: string; password: string }[],
@@ -153,7 +154,20 @@ if (process.argv[1] && /(?:^|[/\\])cli\.(?:ts|js)$/.test(process.argv[1])) {
   const dataDir = dataDirectory();
   const command = process.argv[2];
   try {
-    if (command === "verify" || command === "purge") {
+    if (command === "import-photo-metadata") {
+      const flags = process.argv.slice(3);
+      if (
+        flags.some((flag) => !["--dry-run", "--apply"].includes(flag)) ||
+        flags.length > 1
+      )
+        throw new Error("Usa --dry-run (predefinito) oppure --apply.");
+      const summary = await importPhotoMetadata(
+        dataDir,
+        flags.includes("--apply"),
+      );
+      console.info(JSON.stringify(summary));
+      if (summary.errors) process.exitCode = 1;
+    } else if (command === "verify" || command === "purge") {
       if (!(await maintenance(dataDir, command === "purge")))
         process.exitCode = 1;
     } else {

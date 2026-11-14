@@ -118,7 +118,9 @@ function SettingsForms({ initial }: { initial: Settings }) {
               onChange={(e) => setDate(e.target.value)}
             />
           </label>
-          <label>La nostra foto di copertina</label>
+          <p className="field-label" id="cover-label">
+            La nostra foto di copertina
+          </p>
           <div className="settings-cover">
             {cover ? (
               <img src={photoUrl(cover)} alt="Copertina selezionata" />
@@ -130,6 +132,7 @@ function SettingsForms({ initial }: { initial: Settings }) {
                 className="button secondary"
                 type="button"
                 onClick={() => setPicker(true)}
+                aria-describedby="cover-label"
               >
                 Scegli dal diario
               </button>

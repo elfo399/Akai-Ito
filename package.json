@@ -20,6 +20,8 @@
     "preinit-users": "npm run build -w @akai/shared",
     "prepurge": "npm run build -w @akai/shared",
     "preverify-data": "npm run build -w @akai/shared",
+    "preimport-photo-metadata": "npm run build -w @akai/shared",
+    "import-photo-metadata": "node --env-file-if-exists=.env --import tsx apps/api/src/cli.ts import-photo-metadata",
     "dev": "node --env-file-if-exists=.env node_modules/concurrently/dist/bin/concurrently.js -k \"npm run dev -w @akai/api\" \"npm run dev -w @akai/web\"",
     "build": "npm run build -w @akai/shared && npm run build -w @akai/web && npm run build -w @akai/api",
     "typecheck": "tsc --noEmit -p packages/shared && tsc --noEmit -p apps/api && tsc --noEmit -p apps/web && tsc -p tsconfig.tools.json",

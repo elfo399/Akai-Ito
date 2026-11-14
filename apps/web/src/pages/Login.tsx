@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { LockKeyhole, ArrowRight, Heart } from "lucide-react";
+import { LockKeyhole, ArrowRight } from "lucide-react";
 import { useAuth } from "../auth";
 import { Logo, Thread } from "../components";
+import { WashiTape, ThreadMark } from "../scrapbook";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate(),
@@ -29,7 +30,8 @@ export default function Login() {
         </p>
         <div className="login-art">
           <div className="paper art-note">
-            <Heart size={35} strokeWidth={1} />
+            <WashiTape rose />
+            <ThreadMark />
             <p>
               Ogni ricordo è un nodo
               <br />
@@ -42,6 +44,7 @@ export default function Login() {
         <span className="tiny">IL NOSTRO PICCOLO POSTO NEL MONDO</span>
       </div>
       <section className="login-form paper">
+        <WashiTape />
         <LockKeyhole size={23} strokeWidth={1} />
         <span className="eyebrow">Il nostro diario privato</span>
         <h2>Bentornato a casa.</h2>

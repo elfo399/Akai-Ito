@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,6 +18,9 @@ import { api, formatDate, formatTime, photoUrl } from "../api";
 import type { Memory, Comment, Photo } from "../types";
 import { useAuth } from "../auth";
 import { Loading, ErrorState, Avatar, Dialog, Thread } from "../components";
+const PhotoPositionDialog = lazy(
+  () => import("../components/PhotoPositionDialog"),
+);
 export default function Detail() {
   const { id } = useParams();
   const navigate = useNavigate(),
@@ -31,6 +34,7 @@ export default function Detail() {
     [deleting, setDeleting] = useState(false),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [positionPhoto, setPositionPhoto] = useState<Photo | null>(null);
   if (query.isPending) return <Loading />;
   if (query.error)
     return (
@@ -50,7 +54,10 @@ export default function Detail() {
       )}
       <div className="detail-header">
         <span className="eyebrow">
-          {m.category} <span>·</span> {formatDate(m.eventDate)}
+          {m.category} <span>·</span>{" "}
+          <time className="date-stamp" dateTime={m.eventDate}>
+            {formatDate(m.eventDate)}
+          </time>
         </span>
         <h1>{m.title}</h1>
         <div className="detail-byline">
@@ -78,27 +85,56 @@ export default function Detail() {
       </div>
       <section className="diary-page paper">
         <Thread />
+        <span className="eyebrow story-label">DA QUESTO GIORNO, CON AMORE</span>
         <p className="memory-description">
           {m.description || "A volte bastano le immagini, per ricordare tutto."}
         </p>
         {m.photos.length ? (
           <div className="detail-gallery">
             {m.photos.map((p, i) => (
-              <button
-                className="polaroid gallery-photo"
-                key={p.id}
-                onClick={() => setLightbox(i)}
-                aria-label={"Apri fotografia " + (i + 1)}
-              >
-                <img
-                  src={photoUrl(p.id, i === 0 ? "display" : "thumb")}
-                  alt={`${m.title} — fotografia ${i + 1}`}
-                  loading={i === 0 ? "eager" : "lazy"}
-                />
-                <span className="handwritten">
-                  {i === 0 ? "Un pezzetto di noi." : formatDate(m.eventDate)}
-                </span>
-              </button>
+              <div className="gallery-item" key={p.id}>
+                <button
+                  className="polaroid gallery-photo"
+                  key={p.id}
+                  onClick={() => setLightbox(i)}
+                  aria-label={"Apri fotografia " + (i + 1)}
+                >
+                  <img
+                    src={photoUrl(p.id, i === 0 ? "display" : "thumb")}
+                    alt={`${m.title} — fotografia ${i + 1}`}
+                    loading={i === 0 ? "eager" : "lazy"}
+                  />
+                  <span className="handwritten">
+                    {i === 0 ? "Un pezzetto di noi." : formatDate(m.eventDate)}
+                  </span>
+                </button>
+                <div className="photo-location-actions">
+                  <small>
+                    {p.locationSource === "exif"
+                      ? "Posizione EXIF"
+                      : p.locationSource === "manual"
+                        ? p.latitude === null
+                          ? "Posizione rimossa"
+                          : "Posizione manuale"
+                        : "Senza posizione"}
+                  </small>
+                  <button
+                    type="button"
+                    className="text-link"
+                    onClick={() => setPositionPhoto(p)}
+                    aria-label={
+                      (p.latitude === null ? "Imposta" : "Modifica") +
+                      " posizione foto " +
+                      (i + 1)
+                    }
+                  >
+                    <MapPin size={14} />
+                    {p.latitude === null
+                      ? "Imposta posizione"
+                      : "Modifica posizione"}
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
@@ -114,6 +150,15 @@ export default function Detail() {
         </p>
       </section>
       <Comments memoryId={m.id} />
+      {positionPhoto && (
+        <Suspense fallback={<Loading />}>
+          <PhotoPositionDialog
+            photo={positionPhoto}
+            memory={m}
+            onClose={() => setPositionPhoto(null)}
+          />
+        </Suspense>
+      )}
       {lightbox !== null && (
         <Lightbox
           photos={m.photos}
@@ -129,7 +174,7 @@ export default function Detail() {
         >
           <p>
             Resterà nel cestino, recuperabile per 30 giorni prima della pulizia
-            programmata.
+            di manutenzione.
           </p>
           {error && (
             <p className="error" role="alert">
@@ -188,11 +233,16 @@ function Lightbox({
   const next = (delta: number) =>
     setIndex((i) => (i + delta + photos.length) % photos.length);
   useEffect(() => {
-    dialog.current!.showModal();
+    const element = dialog.current!;
+    const opener = document.activeElement;
+    element.showModal();
     const before = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
+      element.close();
       document.body.style.overflow = before;
+      if (opener instanceof HTMLElement && opener.isConnected)
+        opener.focus({ preventScroll: true });
     };
   }, []);
   return (
@@ -216,9 +266,10 @@ function Lightbox({
       }}
     >
       <div className="lightbox-toolbar">
-        <span>
+        <span aria-live="polite" aria-atomic="true">
           {index + 1} / {photos.length}
         </span>
+        <p className="lightbox-title">{title}</p>
         <a
           href={photoUrl(photos[index].id, "original")}
           className="icon-button"
@@ -257,6 +308,7 @@ function Lightbox({
           <ChevronLeft />
         </button>
         <img
+          key={photos[index].id}
           src={photoUrl(photos[index].id, "display")}
           alt={`${title}, fotografia ${index + 1}`}
         />
@@ -323,12 +375,25 @@ function Comments({ memoryId }: { memoryId: string }) {
             </p>
           )}
           {query.data.map((c) => (
-            <div className="comment paper" key={c.id}>
+            <div
+              className={
+                "comment paper " +
+                (c.authorId === user!.id ? "comment-own" : "comment-partner")
+              }
+              key={c.id}
+            >
               <Avatar id={c.authorId} name={c.author} avatar={c.avatar} />
               <div className="comment-content">
                 <div className="comment-author">
-                  <strong>{c.author}</strong>
-                  <time>
+                  <strong>
+                    {c.author}
+                    <small>
+                      {c.authorId === user!.id
+                        ? "Il tuo biglietto"
+                        : "Un biglietto per te"}
+                    </small>
+                  </strong>
+                  <time dateTime={c.createdAt}>
                     {formatTime(c.createdAt)}
                     {c.updatedAt !== c.createdAt ? " · modificato" : ""}
                   </time>

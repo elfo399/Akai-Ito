@@ -1,4 +1,10 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  integer,
+  real,
+  index,
+} from "drizzle-orm/sqlite-core";
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -54,6 +60,10 @@ export const media = sqliteTable(
     original: text("original").notNull(),
     display: text("display").notNull(),
     thumb: text("thumb").notNull(),
+    latitude: real("latitude"),
+    longitude: real("longitude"),
+    capturedOn: text("captured_on"),
+    locationSource: text("location_source", { enum: ["exif", "manual"] }),
   },
   (t) => [index("media_memory").on(t.memoryId)],
 );

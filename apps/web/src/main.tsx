@@ -18,6 +18,8 @@ import "@fontsource/caveat/latin-600.css";
 import "@fontsource/cormorant-garamond/latin-400.css";
 import "@fontsource/cormorant-garamond/latin-500.css";
 import "./style.css";
+import "./scrapbook.css";
+import "./world.css";
 const Login = lazy(() => import("./pages/Login"));
 const Home = lazy(() => import("./pages/Home"));
 const Timeline = lazy(() => import("./pages/Timeline"));
@@ -26,6 +28,7 @@ const Detail = lazy(() => import("./pages/Detail"));
 const Albums = lazy(() => import("./pages/Albums"));
 const SettingsPage = lazy(() => import("./pages/Settings"));
 const Trash = lazy(() => import("./pages/Trash"));
+const World = lazy(() => import("./pages/World"));
 const client = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, staleTime: 15000, refetchOnWindowFocus: true },
@@ -58,6 +61,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/timeline" element={<Timeline />} />
+            <Route path="/world" element={<World />} />
             <Route path="/memories/new" element={<Editor />} />
             <Route path="/memories/:id/edit" element={<Editor />} />
             <Route path="/memories/:id" element={<Detail />} />

@@ -23,7 +23,11 @@ import {
   passwordInput,
   civilDate,
   categories,
+  type PhotoLocation,
+  type WorldData,
 } from "@akai/shared";
+import { extractPhotoMetadata } from "./photo-metadata.js";
+import { mapConfig } from "./map-config.js";
 import { openDb } from "./db.js";
 import {
   users,
@@ -62,6 +66,7 @@ export type AppOptions = {
 };
 
 export async function createApp(options: AppOptions) {
+  const cartography = mapConfig();
   const allowedOrigins = new Set([options.origin]);
   const configuredOrigin = new URL(options.origin);
   const loopbackHosts = ["localhost", "127.0.0.1", "[::1]"];
@@ -111,7 +116,12 @@ export async function createApp(options: AppOptions) {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "blob:", "data:"],
+        imgSrc: [
+          "'self'",
+          "blob:",
+          "data:",
+          new URL(cartography.tileUrl).origin,
+        ],
         fontSrc: ["'self'"],
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
@@ -119,6 +129,7 @@ export async function createApp(options: AppOptions) {
       },
     },
     crossOriginResourcePolicy: { policy: "same-origin" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   });
   await app.register(rateLimit, { max: 300, timeWindow: "1 minute" });
   const maxFiles = z.coerce
@@ -280,7 +291,13 @@ export async function createApp(options: AppOptions) {
         flag: "wx",
         mode: 0o600,
       });
-      return { id, original: files[0], display: files[1], thumb: files[2] };
+      return {
+        id,
+        original: files[0],
+        display: files[1],
+        thumb: files[2],
+        ...(await extractPhotoMetadata(buffer)),
+      };
     } catch (error) {
       await clean(files);
       if ((error as { statusCode?: number }).statusCode) throw error;
@@ -293,6 +310,10 @@ export async function createApp(options: AppOptions) {
         id: media.id,
         position: media.position,
         isCover: media.isCover,
+        latitude: media.latitude,
+        longitude: media.longitude,
+        capturedOn: media.capturedOn,
+        locationSource: media.locationSource,
       })
       .from(media)
       .where(eq(media.memoryId, id))
@@ -311,6 +332,95 @@ export async function createApp(options: AppOptions) {
   app.get("/api/health", async () => {
     sqlite.prepare("SELECT 1").get();
     return { status: "ok" };
+  });
+  app.get("/api/world/config", async () => cartography);
+  app.get("/api/world", async (req): Promise<WorldData> => {
+    const { until } = z
+      .object({ until: civilDate.optional() })
+      .parse(req.query);
+    const date = sql<string>`coalesce(${media.capturedOn}, ${memories.eventDate})`;
+    const active = isNull(memories.deletedAt);
+    const rows = db
+      .select({
+        id: media.id,
+        memoryId: memories.id,
+        title: memories.title,
+        location: memories.location,
+        latitude: media.latitude,
+        longitude: media.longitude,
+        capturedOn: media.capturedOn,
+        locationSource: media.locationSource,
+        date,
+      })
+      .from(media)
+      .innerJoin(memories, eq(memories.id, media.memoryId))
+      .where(
+        and(
+          active,
+          sql`${media.latitude} IS NOT NULL AND ${media.longitude} IS NOT NULL`,
+          until ? sql`${date} <= ${until}` : undefined,
+        ),
+      )
+      .orderBy(asc(date), asc(media.id))
+      .all();
+    const summary = db
+      .select({
+        firstDate: sql<string | null>`min(${date})`,
+        unlocatedCount: sql<number>`coalesce(sum(case when ${media.latitude} IS NULL OR ${media.longitude} IS NULL then 1 else 0 end), 0)`,
+      })
+      .from(media)
+      .innerJoin(memories, eq(memories.id, media.memoryId))
+      .where(active)
+      .get()!;
+    return {
+      config: cartography,
+      ...summary,
+      photos: rows.map((row) => ({
+        id: row.id,
+        memoryId: row.memoryId,
+        title: row.title,
+        location: row.location,
+        latitude: row.latitude!,
+        longitude: row.longitude!,
+        date: row.date,
+        dateSource: row.capturedOn ? "exif" : "event",
+        locationSource: row.locationSource === "manual" ? "manual" : "exif",
+      })),
+    };
+  });
+  app.put("/api/media/:id/location", async (req) => {
+    const id = idParam(req);
+    const input = z
+      .object({
+        latitude: z.number().min(-90).max(90).nullable(),
+        longitude: z.number().min(-180).max(180).nullable(),
+        version: z.number().int().positive(),
+      })
+      .strict()
+      .refine((v) => (v.latitude === null) === (v.longitude === null))
+      .parse(req.body);
+    return db.transaction((tx) => {
+      const photo =
+        tx.select().from(media).where(eq(media.id, id)).get() ??
+        fail(404, "Fotografia non trovata.");
+      versionCheck(photo.memoryId, input.version);
+      tx.update(media)
+        .set({
+          latitude: input.latitude,
+          longitude: input.longitude,
+          locationSource: "manual",
+        })
+        .where(eq(media.id, id))
+        .run();
+      tx.update(memories)
+        .set({ version: input.version + 1, updatedAt: now() })
+        .where(eq(memories.id, photo.memoryId))
+        .run();
+      return {
+        photo: photoRows(photo.memoryId).find((p) => p.id === id),
+        version: input.version + 1,
+      };
+    });
   });
   app.post(
     "/api/auth/login",
@@ -540,12 +650,12 @@ export async function createApp(options: AppOptions) {
   });
   app.get("/api/memories/:id", async (req) => detail(idParam(req)));
   async function saveMemory(req: FastifyRequest, editing: boolean) {
-    const saved: {
+    const saved: ({
       id: string;
       original: string;
       display: string;
       thumb: string;
-    }[] = [];
+    } & PhotoLocation)[] = [];
     let committed = false;
     try {
       let payload: unknown;

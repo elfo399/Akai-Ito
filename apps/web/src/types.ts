@@ -1,11 +1,15 @@
-import type { MemoryInput } from "@akai/shared";
+import type { MemoryInput, PhotoLocation } from "@akai/shared";
 export type User = {
   id: string;
   name: string;
   username: string;
   avatar: string | null;
 };
-export type Photo = { id: string; position: number; isCover: boolean };
+export type Photo = {
+  id: string;
+  position: number;
+  isCover: boolean;
+} & PhotoLocation;
 export type Memory = MemoryInput & {
   id: string;
   authorId: string;
