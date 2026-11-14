@@ -77,6 +77,20 @@ export default function Detail() {
       {m.description || "A volte bastano le immagini, per ricordare tutto."}
     </p>
   );
+  const metadata = (
+    <div className="detail-story-meta">
+      <div className="detail-byline">
+        <span>Una pagina di {m.author}</span>
+        {m.location && (
+          <span>
+            <MapPin size={15} />
+            {m.location}
+          </span>
+        )}
+      </div>
+      <SeasonAccent date={m.eventDate} />
+    </div>
+  );
   return (
     <article
       className="page detail-page diary-opening"
@@ -168,16 +182,7 @@ export default function Detail() {
                   </div>
                   {i === 0 && (
                     <div className="detail-story-block">
-                      <SeasonAccent date={m.eventDate} />
-                      <div className="detail-byline">
-                        <span>Una pagina di {m.author}</span>
-                        {m.location && (
-                          <span>
-                            <MapPin size={15} />
-                            {m.location}
-                          </span>
-                        )}
-                      </div>
+                      {metadata}
                       <div className="memory-experiences">
                         <button
                           className="button"
@@ -207,16 +212,7 @@ export default function Detail() {
             </div>
           ) : (
             <>
-              <SeasonAccent date={m.eventDate} />
-              <div className="detail-byline">
-                <span>Una pagina di {m.author}</span>
-                {m.location && (
-                  <span>
-                    <MapPin size={15} />
-                    {m.location}
-                  </span>
-                )}
-              </div>
+              {metadata}
               {story}
               <div className="no-photos">
                 <Images size={32} strokeWidth={1} />

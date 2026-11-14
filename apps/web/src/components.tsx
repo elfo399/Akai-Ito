@@ -68,7 +68,7 @@ export function Layout({ children }: { children: ReactNode }) {
     to === "/"
       ? pathname === "/"
       : pathname.startsWith(to) ||
-        (to === "/timeline" && pathname.startsWith("/memories")) ||
+        (to === "/albums" && pathname.startsWith("/memories")) ||
         (to === "/settings" && pathname === "/trash");
   return (
     <>
@@ -269,8 +269,12 @@ export function MemoryCard({ memory }: { memory: MemoryCardData }) {
         <span className="category-label">{memory.category}</span>
       </div>
       <div className="polaroid-caption">
-        <span className="date">{formatDate(memory.eventDate)}</span>
-        <SeasonAccent date={memory.eventDate} />
+        <div className="memory-card-meta">
+          <time className="date" dateTime={memory.eventDate}>
+            {formatDate(memory.eventDate)}
+          </time>
+          <SeasonAccent date={memory.eventDate} />
+        </div>
         <h3>
           {memory.title}
           <ArrowUpRight size={18} />

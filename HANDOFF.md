@@ -1,14 +1,22 @@
 # Handoff — Akai Ito
 
-Aggiornato il **14 novembre 2026**. Questo documento permette di riprendere il lavoro senza la chat precedente.
+Aggiornato il **15 novembre 2026**. Questo documento permette di riprendere il lavoro senza la chat precedente.
+
+## Rifinitura successiva alla consegna
+
+Dopo il merge `03f1d3b` e la build Jenkins #4 conclusa con SUCCESS, l'utente ha chiesto etichette stagionali più piccole, metadati meglio allineati e **Album** attivo nel menu quando si è dentro un ricordo. Queste modifiche sono consegnate sul branch `fix/compact-memory-metadata`, con push autorizzato il 15 novembre 2026 dopo la verifica nella preview Docker locale. Questa rifinitura non include un nuovo merge su `main` o un deployment.
+
+Le stagioni sono ora testo e icona compatti senza riquadro: accanto alla data nelle card e nella riga autore/luogo nel dettaglio. Il testo del ricordo ha una colonna centrata e coerente con i metadati. Album risulta attivo su dettaglio, creazione e modifica dei ricordi; Timeline resta attiva nella pagina timeline. File coinvolti: `components.tsx`, `pages/Detail.tsx`, `refinements.css`. Superati typecheck, lint, build Docker e controllo browser a 375, 430, 768, 1100 e 1440 px.
+
+L'utente ha poi chiesto di ridurre anche i pulsanti nel ricordo. In `refinements.css` le azioni Rivivi, Luogo, Sfoglia, Modifica e invio commento sono ora alte 34 px su desktop, con icone da 14 px e padding ridotto. Su touch mantengono target da 44 px; i due comandi sotto la foto hanno spaziatura orizzontale compatta. La barra Sfoglia è più bassa e l'invio del pensiero resta un piccolo pulsante allineato al campo, senza occupare tutta la riga su mobile. La modifica è limitata ai controlli della pagina ricordo: cinema, mappa e dialoghi mantengono le proprie dimensioni. Build Docker e 28 controlli browser su 375, 768 e 1280 px superati; collaudo locale e consegna nello stesso branch.
 
 ## Da leggere per primo
 
 Il progetto è un diario fotografico privato per due persone, con stile Scrapbook: carta crema, Polaroid, nastri adesivi, annotazioni e filo rosso. L'utente comunica in italiano e vuole vedere cambiamenti funzionanti, verificati nel browser e in Docker locale.
 
-**Stato del prodotto:** la revisione immersiva e la nuova gestione degli album sono implementate, verificate e accettate dall'utente con «per ora va bene». Non c'è una nuova funzionalità ancora da completare. L'ultima richiesta è preparare questo handoff per cambiare PC, pubblicare tutte le modifiche e fare merge su `main`.
+**Stato del prodotto:** la revisione immersiva e la nuova gestione degli album sono implementate, verificate e accettate dall'utente con «per ora va bene». La prima consegna con handoff è stata unita su `main`. L'ultima richiesta è pubblicare le successive rifiniture UI descritte sopra sul branch `fix/compact-memory-metadata`.
 
-**Consegna Git autorizzata:** commit del codice e della documentazione su `feat/immersive-experience`, push del branch e merge su `main`. La pipeline di `main` può avviare il deploy sul Raspberry. Questa autorizzazione riguarda la consegna corrente; le successive modifiche o richieste vanno gestite con le nuove istruzioni dell'utente.
+**Consegna Git iniziale, completata:** codice e documentazione su `feat/immersive-experience`, push e merge su `main` (`03f1d3b`), con Jenkins #4 SUCCESS. **Consegna successiva autorizzata:** commit e push delle rifiniture su `fix/compact-memory-metadata`. Un eventuale nuovo merge su `main` va gestito con le nuove istruzioni dell'utente, perché può avviare il deploy sul Raspberry.
 
 Repository: `https://github.com/elfo399/Akai-Ito.git`.
 Base da cui è iniziata questa revisione: `bd06b301250eee8f4a86eb0fa915ba226ca991aa` (`feat: add scrapbook redesign and interactive photo world`).
@@ -16,7 +24,17 @@ Branch di lavoro: `feat/immersive-experience`. Il contenuto di questo handoff vi
 
 ## Riprendere su un altro PC
 
-Per ricevere la consegna unita su `main`:
+Per ricevere anche le ultime rifiniture UI:
+
+```sh
+git clone --branch fix/compact-memory-metadata https://github.com/elfo399/Akai-Ito.git
+cd Akai-Ito
+git status --short --branch
+```
+
+In un clone esistente: controllare prima il lavoro locale, quindi `git fetch origin`, `git switch fix/compact-memory-metadata` e `git pull --ff-only`.
+
+Per ricevere invece la consegna precedente già unita su `main`:
 
 ```sh
 git clone https://github.com/elfo399/Akai-Ito.git

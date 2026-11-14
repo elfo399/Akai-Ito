@@ -135,9 +135,24 @@
 }
 .detail-story-block {
   grid-column: 1/-1;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
 }
-.detail-story-block .detail-byline {
-  margin: 12px 0 18px;
+.detail-story-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 16px;
+}
+.detail-story-meta .detail-byline {
+  margin: 0;
+  gap: 8px 16px;
+}
+.detail-story-meta > .season-accent {
+  flex-shrink: 0;
 }
 .detail-story-block .memory-experiences {
   margin: 0 0 25px;
@@ -148,6 +163,7 @@
 }
 .detail-story-block .memory-description {
   margin: 0;
+  max-width: none;
 }
 .detail-page .detail-tools {
   position: static;
@@ -180,17 +196,36 @@
   animation: none;
 }
 .season-accent {
-  padding: 7px 11px;
-  margin-top: 8px;
-  gap: 7px;
-  font-size: 11px;
-  border: 1px solid var(--season-tone);
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--season-tone) 42%, var(--paper));
+  padding: 0;
+  margin: 0;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+  border: 0;
+  background: none;
 }
 .season-accent svg {
-  width: 23px;
-  height: 23px;
+  width: 14px;
+  height: 14px;
+}
+.memory-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+.memory-card-meta .date {
+  margin: 0;
+}
+.memory-card-meta .season-accent {
+  font-size: 9px;
+}
+.memory-card-meta .season-accent svg {
+  width: 13px;
+  height: 13px;
 }
 .memory-card[data-season]:not([data-season="standard"]) {
   border-bottom: 6px solid var(--season-tone);
@@ -413,5 +448,99 @@
   }
   .collection-empty {
     padding: 30px 20px;
+  }
+}
+
+/* Compact actions in the memory page; touch targets keep their own spacing. */
+.detail-page {
+  --memory-control-height: 34px;
+}
+.detail-page
+  :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
+  .button {
+  min-height: var(--memory-control-height);
+  padding: 6px 11px;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  box-shadow: none;
+}
+.detail-page
+  :is(.memory-experiences, .diary-browser, .detail-tools, .comment-form)
+  .button
+  svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.detail-page :is(.diary-browser, .detail-tools) .icon-button {
+  min-width: var(--memory-control-height);
+  min-height: var(--memory-control-height);
+}
+.detail-page :is(.diary-browser, .detail-tools) .icon-button svg {
+  width: 16px;
+  height: 16px;
+}
+.detail-page .diary-browser {
+  padding: 8px 12px;
+  gap: 10px;
+}
+.detail-page .diary-browser > .handwritten {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.2;
+  text-align: left;
+}
+.detail-page .diary-browser > .button {
+  width: auto;
+  flex-shrink: 0;
+}
+.detail-page .diary-page-number {
+  font-size: 19px;
+}
+.detail-page .detail-tools {
+  margin: 10px 0 22px;
+  gap: 6px;
+}
+.detail-page .comment-form {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 16px;
+  gap: 12px;
+}
+.detail-page .comment-form label {
+  min-width: 0;
+}
+.detail-page .comment-form .button {
+  width: auto;
+  margin-left: 0;
+  align-self: end;
+  justify-self: end;
+}
+@media (max-width: 620px) {
+  .detail-page .memory-experiences {
+    gap: 6px;
+  }
+  .detail-page .memory-experiences .button {
+    padding-inline: 7px;
+    gap: 5px;
+  }
+  .detail-page .diary-browser > .handwritten {
+    font-size: 17px;
+  }
+  .detail-page .comment-form {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 14px;
+    gap: 10px;
+  }
+  .detail-page .comment-form .button {
+    grid-column: 2;
+  }
+}
+@media (pointer: coarse) {
+  .detail-page {
+    --memory-control-height: 44px;
   }
 }
