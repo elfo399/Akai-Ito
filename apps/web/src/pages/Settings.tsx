@@ -21,6 +21,7 @@ import {
   Dialog,
 } from "../components";
 import { Pagination } from "./Timeline";
+import { MotionSettings } from "../motion";
 export default function SettingsPage() {
   const query = useQuery({
     queryKey: ["settings"],
@@ -70,6 +71,7 @@ function SettingsForms({ initial }: { initial: Settings }) {
         title="Le nostre piccole impostazioni"
         subtitle="Tutto quello che ci rende noi."
       />
+      <MotionSettings />
       {message && (
         <p className="success" role="status">
           {message}

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownUp, Heart } from "lucide-react";
 import { categories } from "@akai/shared";
@@ -13,11 +14,21 @@ import {
   MemoryCard,
 } from "../components";
 import { TimelineThread, StoryEnding } from "../scrapbook";
+import { useKnotReveal, useReducedMotion } from "../motion";
 export default function Timeline() {
-  const [order, setOrder] = useState("desc"),
-    [year, setYear] = useState(""),
-    [category, setCategory] = useState(""),
-    [page, setPage] = useState(1);
+  const [search, setSearch] = useSearchParams();
+  const order = search.get("order") === "asc" ? "asc" : "desc",
+    year = search.get("year") ?? "",
+    category = search.get("category") ?? "",
+    page = Math.max(1, Number(search.get("page")) || 1);
+  const update = (key: string, value: string) => {
+    const next = new URLSearchParams(search);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    if (key !== "page") next.delete("page");
+    setSearch(next, { replace: true });
+  };
+  const ref = useRef<HTMLDivElement>(null);
   const params = new URLSearchParams({
     order,
     page: String(page),
@@ -28,10 +39,7 @@ export default function Timeline() {
     queryKey: ["memories", "timeline", order, year, category, page],
     queryFn: () => api<MemoryList>("/memories?" + params),
   });
-  const change = (fn: () => void) => {
-    fn();
-    setPage(1);
-  };
+  useKnotReveal(ref, query.data?.items.map((item) => item.id).join(":"));
   return (
     <div className="page">
       <PageHeading
@@ -43,10 +51,7 @@ export default function Timeline() {
       <div className="filters paper">
         <label className="inline-label">
           Anno
-          <select
-            value={year}
-            onChange={(e) => change(() => setYear(e.target.value))}
-          >
+          <select value={year} onChange={(e) => update("year", e.target.value)}>
             <option value="">Tutti gli anni</option>
             {(query.data?.years ?? (year ? [year] : [])).map((y) => (
               <option key={y}>{y}</option>
@@ -57,7 +62,7 @@ export default function Timeline() {
           Capitolo
           <select
             value={category}
-            onChange={(e) => change(() => setCategory(e.target.value))}
+            onChange={(e) => update("category", e.target.value)}
           >
             <option value="">Tutte le categorie</option>
             {categories.map((c) => (
@@ -67,9 +72,7 @@ export default function Timeline() {
         </label>
         <button
           className="text-link sort-button"
-          onClick={() =>
-            change(() => setOrder(order === "desc" ? "asc" : "desc"))
-          }
+          onClick={() => update("order", order === "desc" ? "asc" : "desc")}
         >
           <ArrowDownUp size={16} />
           {order === "desc" ? "Dal più recente" : "Dall’inizio"}
@@ -93,7 +96,7 @@ export default function Timeline() {
         />
       ) : (
         <>
-          <div className="timeline">
+          <div className="timeline" ref={ref}>
             <TimelineThread />
             {query.data.items.map((m, i) => (
               <div
@@ -117,7 +120,7 @@ export default function Timeline() {
             page={page}
             total={query.data.total}
             size={20}
-            onChange={setPage}
+            onChange={(value) => update("page", String(value))}
           />
         </>
       )}
@@ -135,6 +138,7 @@ export function Pagination({
   size: number;
   onChange: (p: number) => void;
 }) {
+  const reduced = useReducedMotion();
   return total > size ? (
     <div className="pagination">
       <button
@@ -142,7 +146,7 @@ export function Pagination({
         disabled={page === 1}
         onClick={() => {
           onChange(page - 1);
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.scrollTo({ top: 0, behavior: reduced ? "instant" : "smooth" });
         }}
       >
         Precedente
@@ -155,7 +159,7 @@ export function Pagination({
         disabled={page * size >= total}
         onClick={() => {
           onChange(page + 1);
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.scrollTo({ top: 0, behavior: reduced ? "instant" : "smooth" });
         }}
       >
         Successiva

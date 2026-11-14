@@ -26,6 +26,19 @@ export const settings = sqliteTable("couple_settings", {
   startDate: text("start_date"),
   cover: text("cover"),
 });
+export const collections = sqliteTable(
+  "collections",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    category: text("category").notNull(),
+    description: text("description").notNull().default(""),
+    version: integer("version").notNull().default(1),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (t) => [index("collections_category").on(t.category)],
+);
 export const memories = sqliteTable(
   "memories",
   {
@@ -35,6 +48,9 @@ export const memories = sqliteTable(
     description: text("description").notNull(),
     category: text("category").notNull(),
     location: text("location").notNull(),
+    collectionId: text("collection_id").references(() => collections.id, {
+      onDelete: "set null",
+    }),
     authorId: text("author_id")
       .notNull()
       .references(() => users.id),
@@ -46,6 +62,7 @@ export const memories = sqliteTable(
   (t) => [
     index("memories_date").on(t.eventDate),
     index("memories_category").on(t.category),
+    index("memories_collection").on(t.collectionId),
   ],
 );
 export const media = sqliteTable(

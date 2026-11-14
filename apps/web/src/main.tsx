@@ -1,9 +1,9 @@
 import React, { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import {
-  BrowserRouter,
-  Routes,
-  Route,
+  createBrowserRouter,
+  RouterProvider,
+  Outlet,
   Navigate,
   useLocation,
 } from "react-router-dom";
@@ -20,11 +20,14 @@ import "@fontsource/cormorant-garamond/latin-500.css";
 import "./style.css";
 import "./scrapbook.css";
 import "./world.css";
+import "./immersive.css";
+import "./refinements.css";
+import { MotionProvider, RouteViewport } from "./motion";
+import Detail from "./pages/Detail";
+import Timeline from "./pages/Timeline";
 const Login = lazy(() => import("./pages/Login"));
 const Home = lazy(() => import("./pages/Home"));
-const Timeline = lazy(() => import("./pages/Timeline"));
 const Editor = lazy(() => import("./pages/Editor"));
-const Detail = lazy(() => import("./pages/Detail"));
 const Albums = lazy(() => import("./pages/Albums"));
 const SettingsPage = lazy(() => import("./pages/Settings"));
 const Trash = lazy(() => import("./pages/Trash"));
@@ -40,58 +43,66 @@ function App() {
   if (loading) return <Loading />;
   if (error)
     return <ErrorState error={new Error(error)} retry={() => void refresh()} />;
+  if (!user)
+    return location.pathname === "/login" ? (
+      <Suspense fallback={<Loading />}>
+        <Outlet />
+      </Suspense>
+    ) : (
+      <Navigate to="/login" state={{ from: location.pathname }} replace />
+    );
+  if (location.pathname === "/login") return <Navigate to="/" replace />;
   return (
-    <Suspense fallback={<Loading />}>
-      {!user ? (
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to="/login"
-                state={{ from: location.pathname }}
-                replace
-              />
-            }
-          />
-        </Routes>
-      ) : (
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/timeline" element={<Timeline />} />
-            <Route path="/world" element={<World />} />
-            <Route path="/memories/new" element={<Editor />} />
-            <Route path="/memories/:id/edit" element={<Editor />} />
-            <Route path="/memories/:id" element={<Detail />} />
-            <Route path="/albums/:category?" element={<Albums />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/trash" element={<Trash />} />
-            <Route path="/login" element={<Navigate to="/" replace />} />
-            <Route
-              path="*"
-              element={
-                <div className="empty">
-                  <h1>Questa pagina non è nel diario.</h1>
-                  <a href="/">Torna alla copertina</a>
-                </div>
-              }
-            />
-          </Routes>
-        </Layout>
-      )}
-    </Suspense>
+    <Layout>
+      <Suspense fallback={<Loading />}>
+        <Outlet />
+      </Suspense>
+    </Layout>
   );
 }
+function MemoryPage() {
+  const location = useLocation();
+  return <Detail key={location.pathname} />;
+}
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: (
+      <AuthProvider>
+        <MotionProvider>
+          <RouteViewport />
+          <App />
+        </MotionProvider>
+      </AuthProvider>
+    ),
+    children: [
+      { index: true, element: <Home /> },
+      { path: "login", element: <Login /> },
+      { path: "timeline", element: <Timeline /> },
+      { path: "world", element: <World /> },
+      { path: "memories/new", element: <Editor /> },
+      { path: "memories/:id/edit", element: <Editor /> },
+      { path: "memories/:id", element: <MemoryPage /> },
+      { path: "albums/:category?", element: <Albums /> },
+      { path: "albums/:category/:collectionId", element: <Albums /> },
+      { path: "settings", element: <SettingsPage /> },
+      { path: "trash", element: <Trash /> },
+      {
+        path: "*",
+        element: (
+          <div className="empty">
+            <h1>Questa pagina non è nel diario.</h1>
+            <a href="/">Torna alla copertina</a>
+          </div>
+        ),
+      },
+    ],
+  },
+]);
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>
   </React.StrictMode>,
 );

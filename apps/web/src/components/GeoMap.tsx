@@ -6,6 +6,7 @@ import {
   Popup,
   useMap,
   useMapEvents,
+  Polyline,
 } from "react-leaflet";
 import { DomEvent, divIcon, latLngBounds } from "leaflet";
 import { Link } from "react-router-dom";
@@ -23,6 +24,8 @@ import {
 } from "@akai/shared";
 import { formatDate, photoUrl } from "../api";
 import { useReducedMotion } from "../world-hooks";
+import { journeyLine, motionTokens } from "../experience";
+import { MemoryLink } from "../navigation";
 import "leaflet/dist/leaflet.css";
 import "../world.css";
 
@@ -147,12 +150,13 @@ function PhotoPopup({ group }: { group: PhotoGroup }) {
   const photo = group.photos[Math.min(index, group.photos.length - 1)];
   return (
     <div className="world-popup">
-      <Link
-        to={"/memories/" + photo.memoryId}
+      <MemoryLink
+        memoryId={photo.memoryId}
+        photoId={photo.id}
         aria-label={"Apri il ricordo: " + photo.title}
       >
         <img src={photoUrl(photo.id)} alt={photo.title} loading="lazy" />
-      </Link>
+      </MemoryLink>
       <span className="date">{formatDate(photo.date)}</span>
       <h3>{photo.title}</h3>
       {photo.location && <p>{photo.location}</p>}
@@ -270,11 +274,19 @@ export default function GeoMap({
   photos = [],
   point,
   onSelect,
+  focus,
+  visited = [],
+  traveling,
+  onInteract,
 }: {
   config: MapConfig;
   photos?: WorldPhoto[];
   point?: Point | null;
   onSelect?: (point: Point) => void;
+  focus?: WorldPhoto;
+  visited?: WorldPhoto[];
+  traveling?: boolean;
+  onInteract?: () => void;
 }) {
   const reduced = useReducedMotion();
   const [tileError, setTileError] = useState(false);
@@ -312,6 +324,13 @@ export default function GeoMap({
           }}
         />
         <MapSetup photos={photos} point={point} onSelect={onSelect} />
+        <TravelCamera
+          focus={focus}
+          traveling={traveling}
+          maxZoom={config.maxZoom}
+          onInteract={onInteract}
+        />
+        <GeographicThread visited={visited} animate={traveling !== false} />
         {onSelect ? (
           point && (
             <Marker
@@ -340,5 +359,99 @@ export default function GeoMap({
         </p>
       )}
     </div>
+  );
+}
+
+function TravelCamera({
+  focus,
+  traveling,
+  maxZoom,
+  onInteract,
+}: {
+  focus?: WorldPhoto;
+  traveling?: boolean;
+  maxZoom: number;
+  onInteract?: () => void;
+}) {
+  const map = useMap(),
+    reduced = useReducedMotion(),
+    last = useRef<string | undefined>(undefined);
+  useMapEvents({ dragstart: () => onInteract?.() });
+  useEffect(() => {
+    if (!focus) {
+      map.stop();
+      last.current = undefined;
+      return;
+    }
+    const changed = last.current !== focus.id;
+    last.current = focus.id;
+    map.stop();
+    if (traveling === false && !changed) return;
+    const distance = map
+      .getCenter()
+      .distanceTo([focus.latitude, focus.longitude]);
+    const zoom = Math.min(
+      maxZoom,
+      distance > 3000000 ? 4 : distance > 500000 ? 5 : 7,
+    );
+    if (changed && distance < 10 && map.getZoom() >= 4) return;
+    if (reduced)
+      map.setView([focus.latitude, focus.longitude], zoom, { animate: false });
+    else
+      map.flyTo([focus.latitude, focus.longitude], zoom, {
+        duration: distance > 3000000 ? 2.2 : motionTokens.camera / 1000,
+        easeLinearity: 0.25,
+      });
+    return () => {
+      map.stop();
+    };
+  }, [
+    map,
+    focus?.id,
+    focus?.latitude,
+    focus?.longitude,
+    traveling,
+    reduced,
+    maxZoom,
+  ]);
+  return null;
+}
+function GeographicThread({
+  visited,
+  animate,
+}: {
+  visited: WorldPhoto[];
+  animate: boolean;
+}) {
+  const line = useMemo(() => journeyLine(visited), [visited]);
+  if (line.length < 2) return null;
+  const copies = (points: [number, number][]): [number, number][][] => [
+    points,
+    points.map(([lat, lng]) => [lat, lng - 360]),
+    points.map(([lat, lng]) => [lat, lng + 360]),
+  ];
+  return (
+    <>
+      {line.length > 2 && (
+        <Polyline
+          positions={copies(line.slice(0, -1))}
+          className="geographic-thread"
+          pathOptions={{ color: "#a83232", weight: 2, opacity: 0.75 }}
+          interactive={false}
+        />
+      )}
+      <Polyline
+        key={visited.at(-1)?.id}
+        positions={copies(line.slice(-2))}
+        className={"geographic-thread " + (animate ? "geographic-leg" : "")}
+        pathOptions={{ color: "#a83232", weight: 2, opacity: 0.75 }}
+        interactive={false}
+        eventHandlers={{
+          add: (event) => {
+            event.target.getElement()?.setAttribute("pathLength", "1");
+          },
+        }}
+      />
+    </>
   );
 }

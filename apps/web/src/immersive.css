@@ -1,0 +1,739 @@
+:root {
+  --motion-feedback: 200ms;
+  --motion-reveal: 480ms;
+  --motion-page: 650ms;
+  --motion-photo: 900ms;
+  --motion-intro: 2000ms;
+  --motion-slide: 6500ms;
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.25, 1);
+  --ease-spring: cubic-bezier(0.18, 0.9, 0.3, 1.16);
+}
+::view-transition-old(root) {
+  animation: page-out var(--motion-page) var(--ease-paper) both;
+}
+::view-transition-new(root) {
+  animation: page-in var(--motion-page) var(--ease-paper) both;
+}
+::view-transition-group(*) {
+  animation-duration: var(--motion-page);
+  animation-timing-function: var(--ease-paper);
+}
+.site-header {
+  view-transition-name: diary-header;
+}
+.mobile-nav {
+  view-transition-name: diary-navigation;
+}
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+[data-season="spring"] {
+  --season-tone: #d9e5ce;
+  --season-ink: #536b44;
+}
+[data-season="summer"] {
+  --season-tone: #ecd8a9;
+  --season-ink: #80642e;
+}
+[data-season="autumn"] {
+  --season-tone: #e5c7ab;
+  --season-ink: #866044;
+}
+[data-season="winter"] {
+  --season-tone: #d7e0e6;
+  --season-ink: #536774;
+}
+.memory-card[data-season]:not([data-season="standard"]) {
+  border-bottom: 3px solid var(--season-tone);
+}
+.detail-page[data-season]:not([data-season="standard"]) .diary-page {
+  border-top: 3px solid var(--season-tone);
+  background-color: color-mix(in srgb, var(--season-tone) 7%, var(--paper));
+}
+.season-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--season-ink);
+  font-size: 10px;
+  margin: 9px 0 0;
+}
+.season-accent svg {
+  height: 19px;
+  width: 19px;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.polaroid {
+  transition:
+    transform var(--motion-feedback) var(--ease-spring),
+    box-shadow var(--motion-feedback) var(--ease-paper);
+}
+.polaroid .tape {
+  transform-origin: 20% 50%;
+  transition: transform var(--motion-feedback) var(--ease-spring);
+}
+@media (hover: hover) and (pointer: fine) {
+  .memory-card:hover,
+  .gallery-photo:hover,
+  .world-postcards .polaroid:hover {
+    transform: translateY(-4px) rotate(0deg);
+    box-shadow:
+      0 10px 24px #59443f22,
+      2px 3px 4px #59443f14;
+  }
+  .polaroid:hover > .tape {
+    transform: rotate(-4deg) translateY(-2px);
+  }
+  .cover-art .cover-polaroid:not(:has(a)) {
+    translate: var(--depth-x, 0px) var(--depth-y, 0px);
+    transition: translate 350ms var(--ease-paper);
+  }
+  .paper-depth .cover-art > .red-thread {
+    translate: calc(var(--depth-x, 0px) * -1) calc(var(--depth-y, 0px) * -0.7);
+  }
+  .paper-depth .postage {
+    translate: calc(var(--depth-x, 0px) * 0.7) calc(var(--depth-y, 0px) * 0.7);
+  }
+}
+@media (hover: none) {
+  .memory-card:hover,
+  .timeline-entry .memory-card:hover {
+    transform: rotate(-1deg);
+  }
+  .memory-card:active,
+  .gallery-photo:active,
+  .world-postcards .polaroid:active {
+    transform: scale(0.99);
+    box-shadow: 0 2px 5px #59443f25;
+  }
+}
+.photo-develop[data-developed="true"],
+.photo-fresh {
+  animation: photo-develop 1100ms var(--ease-paper) both;
+}
+@keyframes photo-develop {
+  from {
+    opacity: 0.45;
+    filter: saturate(0.35) contrast(0.85);
+  }
+  to {
+    opacity: 1;
+    filter: saturate(1) contrast(1);
+  }
+}
+.thread-knot[data-reached="true"] {
+  animation: knot-arrive 650ms var(--ease-spring) 1;
+}
+.thread-knot[data-reached="true"]:after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 1px solid var(--soft-red);
+  border-radius: 50%;
+  animation: knot-ring 750ms ease-out both;
+  pointer-events: none;
+}
+.thread-knot[data-reached="true"] + .year-stamp {
+  animation: stamp-in 400ms var(--ease-paper) both;
+}
+@keyframes knot-arrive {
+  0% {
+    scale: 0.8;
+  }
+  55% {
+    scale: 1.15;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes knot-ring {
+  from {
+    opacity: 0.6;
+    scale: 0.7;
+  }
+  to {
+    opacity: 0;
+    scale: 1.7;
+  }
+}
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    scale: 1.08;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+.date-stamp {
+  animation: stamp-in var(--motion-reveal) var(--ease-paper) both;
+}
+.diary-opening .detail-header {
+  animation: chapter-in var(--motion-reveal) var(--ease-paper) both;
+}
+.diary-opening .diary-page {
+  transform-origin: 5% 50%;
+  animation: paper-open 750ms var(--ease-paper) both;
+}
+.diary-opening .memory-description {
+  animation: chapter-in var(--motion-reveal) 150ms var(--ease-paper) both;
+}
+.route-transitioning
+  .diary-opening
+  :is(.detail-header, .diary-page, .memory-description) {
+  animation: none;
+}
+@keyframes chapter-in {
+  from {
+    opacity: 0;
+    translate: 0 7px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes paper-open {
+  from {
+    opacity: 0.4;
+    transform: perspective(1400px) rotateY(-3deg) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(0) translateY(0);
+  }
+}
+.memory-experiences {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 24px;
+}
+.diary-browser {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  margin-bottom: 30px;
+}
+.diary-browser > .handwritten {
+  font-size: 23px;
+}
+.diary-page-number {
+  flex: 1;
+  text-align: center;
+  font: 22px var(--hand);
+}
+.diary-page-number small {
+  display: block;
+  font:
+    10px/1.5 "DM Sans",
+    sans-serif;
+  margin-top: 4px;
+}
+.diary-browse-zone {
+  touch-action: pan-y;
+}
+.detail-gallery .gallery-hero {
+  grid-column: 1 / -1;
+  max-width: 720px;
+  width: 100%;
+  margin: auto;
+}
+.detail-gallery .gallery-hero img {
+  max-height: 510px;
+  aspect-ratio: 1.45;
+}
+.detail-gallery > .memory-description {
+  grid-column: 1 / -1;
+  margin: 10px 0;
+}
+.experience-settings {
+  margin: 0 0 35px;
+}
+.experience-settings select {
+  max-width: 400px;
+}
+.experience-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.experience-checkbox input {
+  width: 20px;
+  min-height: 20px;
+  margin: 0;
+  accent-color: var(--red);
+}
+.diary-intro {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: center;
+  padding: 25px;
+  animation: intro-paper var(--motion-intro) ease both;
+}
+.diary-intro svg {
+  width: min(440px, 90vw);
+  height: 120px;
+  overflow: visible;
+}
+.diary-intro path {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  animation: intro-thread 1500ms var(--ease-paper) both;
+}
+.diary-intro h1 {
+  font-size: 44px;
+  color: var(--red);
+  animation: chapter-in 650ms 350ms both;
+}
+.diary-intro h1 span {
+  display: block;
+  font: 38px var(--serif);
+  color: var(--ink);
+  margin-top: 12px;
+  letter-spacing: 4px;
+}
+.diary-intro .handwritten {
+  font-size: 25px;
+  max-width: 370px;
+  animation: chapter-in 650ms 600ms both;
+}
+.diary-intro .text-link {
+  position: absolute;
+  right: 25px;
+  bottom: 25px;
+}
+@keyframes intro-thread {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes intro-paper {
+  0%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.world-map-stage {
+  position: relative;
+}
+.journey-panel {
+  position: absolute;
+  right: 18px;
+  bottom: 35px;
+  z-index: 2;
+  width: 280px;
+  padding: 20px;
+  max-height: calc(100% - 90px);
+  overflow: auto;
+  animation: chapter-in var(--motion-reveal) var(--ease-paper) both;
+}
+.journey-panel > .eyebrow {
+  font-size: 8px;
+  padding-right: 22px;
+}
+.journey-close {
+  position: absolute;
+  right: 3px;
+  top: 1px;
+}
+.journey-photo {
+  display: block;
+  margin: 17px 0 13px;
+  padding: 6px 6px 12px;
+  rotate: -1deg;
+}
+.journey-photo img {
+  width: 100%;
+  height: 125px;
+  object-fit: cover;
+  animation: photo-in var(--motion-photo) ease both;
+}
+.journey-photo .handwritten {
+  display: block;
+  font-size: 23px;
+  text-align: center;
+  padding: 9px 3px 0;
+  overflow-wrap: anywhere;
+}
+.journey-panel > time {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.journey-panel > p:not(.journey-legend) {
+  font-size: 12px;
+  margin-top: 6px;
+}
+.journey-photo-pages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  margin: 4px -5px;
+}
+.journey-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  margin-top: 12px;
+}
+.journey-actions .button {
+  padding: 9px 13px;
+  min-height: 44px;
+  font-size: 11px;
+}
+.journey-progress {
+  margin-top: 15px;
+  height: 2px;
+  background: var(--rose);
+}
+.journey-progress span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--red);
+  transform-origin: left;
+  transition: transform 500ms var(--ease-paper);
+}
+.journey-panel .journey-legend {
+  font-size: 9px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.geographic-thread {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: photo-in var(--motion-photo) both;
+}
+.photo-cinema {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  margin: 0;
+  padding: 24px 35px 20px;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  background: #27201e;
+  color: var(--paper);
+  overflow: auto;
+}
+.photo-cinema::backdrop {
+  background: #27201e;
+}
+.photo-cinema[open] {
+  display: flex;
+  flex-direction: column;
+  animation: photo-in var(--motion-photo) ease both;
+}
+.cinema-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 25px;
+}
+.cinema-heading h2 {
+  font-size: 36px;
+  overflow-wrap: anywhere;
+}
+.cinema-heading .eyebrow {
+  color: #ddc9bc;
+  font-size: 9px;
+  margin-bottom: 8px;
+}
+.cinema-heading time {
+  font-size: 11px;
+  display: block;
+  color: #ddc9bc;
+  margin-top: 10px;
+}
+.cinema-stage {
+  position: relative;
+  width: 100%;
+  min-height: 190px;
+  flex: 1;
+  overflow: hidden;
+  touch-action: pan-y;
+  margin: 10px 0;
+}
+.cinema-frame,
+.cinema-previous {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.cinema-frame {
+  z-index: 1;
+  animation: photo-in var(--motion-photo) ease both;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cinema-current,
+.cinema-previous {
+  width: 92%;
+  height: 92%;
+  margin: auto;
+  object-fit: contain;
+}
+.cinema-current {
+  animation: ken-burns var(--motion-slide) linear both;
+  animation-play-state: paused;
+}
+.cinema-stage[data-playing="true"] .cinema-current {
+  animation-play-state: running;
+}
+.cinema-previous {
+  z-index: 0;
+}
+@keyframes ken-burns {
+  from {
+    transform: scale(1) translateX(-0.3%);
+  }
+  to {
+    transform: scale(1.035) translateX(0.3%);
+  }
+}
+.cinema-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 15px;
+  font-size: 12px;
+  color: var(--paper);
+  z-index: 2;
+  background: #27201e20;
+  text-align: center;
+  padding: 20px;
+}
+.photo-cinema .cinema-controls {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 0 auto;
+  padding: 10px 0;
+  border: 0;
+  color: var(--paper);
+  font:
+    12px "DM Sans",
+    sans-serif;
+}
+.cinema-controls .icon-button {
+  border: 1px solid #fff2;
+}
+.cinema-controls .text-link {
+  color: var(--paper);
+}
+.cinema-story {
+  max-width: 740px;
+  max-height: 80px;
+  overflow: auto;
+  font: 18px/1.5 var(--serif);
+  margin: 10px auto 0;
+  text-align: center;
+  white-space: pre-wrap;
+}
+.cinema-motion-note {
+  font-size: 10px;
+  text-align: center;
+  color: #ddc9bc;
+  margin-top: 10px;
+}
+@media (max-width: 800px) {
+  .journey-panel {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    max-height: none;
+    margin: 15px 0 0;
+    padding: 20px;
+  }
+  .journey-photo {
+    max-width: 360px;
+    margin: 15px auto;
+  }
+  .journey-photo img {
+    height: 150px;
+  }
+  .journey-panel > .eyebrow {
+    font-size: 9px;
+  }
+  .journey-actions {
+    max-width: 350px;
+    margin: 12px auto 0;
+  }
+  .journey-photo-pages {
+    max-width: 350px;
+    margin: 4px auto;
+  }
+  .journey-panel > time,
+  .journey-panel > p {
+    display: block;
+    text-align: center;
+  }
+}
+@media (max-width: 620px) {
+  .diary-browser {
+    padding: 12px 9px;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .diary-browser > .handwritten {
+    flex-basis: 100%;
+    text-align: center;
+    margin-bottom: 9px;
+  }
+  .diary-browser > .button {
+    width: 100%;
+  }
+  .diary-page-number {
+    font-size: 20px;
+  }
+  .diary-page-number small {
+    font-size: 8px;
+  }
+  .diary-browser .icon-button {
+    min-width: 40px;
+  }
+  .memory-experiences {
+    gap: 10px;
+  }
+  .memory-experiences .button {
+    font-size: 11px;
+    padding: 12px 14px;
+  }
+  .detail-gallery .gallery-hero img {
+    aspect-ratio: 1.15;
+  }
+  .season-accent {
+    font-size: 9px;
+  }
+  .photo-cinema {
+    padding: 20px 14px 16px;
+  }
+  .cinema-heading {
+    gap: 12px;
+  }
+  .cinema-heading h2 {
+    font-size: 29px;
+  }
+  .cinema-heading .eyebrow {
+    font-size: 8px;
+  }
+  .photo-cinema .cinema-controls {
+    gap: 9px;
+    flex-wrap: wrap;
+    width: 100%;
+    margin: 0;
+  }
+  .cinema-play {
+    min-height: 44px;
+    padding: 10px 13px;
+    font-size: 11px;
+  }
+  .cinema-story {
+    font-size: 16px;
+    max-height: 70px;
+    margin-top: 8px;
+  }
+  .diary-intro h1 {
+    font-size: 36px;
+  }
+}
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *:before,
+html[data-motion="reduced"] *:after,
+html[data-motion="off"] *,
+html[data-motion="off"] *:before,
+html[data-motion="off"] *:after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+html[data-motion="reduced"] .thread-ink,
+html[data-motion="off"] .thread-ink {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+}
+html[data-motion="reduced"]::view-transition-group(*),
+html[data-motion="off"]::view-transition-group(*),
+html[data-motion="reduced"]::view-transition-old(*),
+html[data-motion="off"]::view-transition-old(*),
+html[data-motion="reduced"]::view-transition-new(*),
+html[data-motion="off"]::view-transition-new(*) {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+.geographic-leg {
+  stroke-dasharray: 1;
+  animation: geographic-draw 1600ms var(--ease-paper) both;
+}
+@keyframes geographic-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.world-map-stage {
+  scroll-margin-top: 20px;
+}

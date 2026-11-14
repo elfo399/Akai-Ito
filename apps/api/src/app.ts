@@ -29,6 +29,7 @@ import {
 import { extractPhotoMetadata } from "./photo-metadata.js";
 import { mapConfig } from "./map-config.js";
 import { openDb } from "./db.js";
+import { registerCollections } from "./collections.js";
 import {
   users,
   sessions,
@@ -36,6 +37,7 @@ import {
   memories,
   media,
   comments,
+  collections,
 } from "./schema.js";
 
 type Identity = {
@@ -594,6 +596,9 @@ export async function createApp(options: AppOptions) {
           .regex(/^\d{4}$/)
           .optional(),
         category: z.enum(categories).optional(),
+        collectionId: z
+          .union([z.string().uuid(), z.literal("unassigned")])
+          .optional(),
         trash: z.enum(["true", "false"]).default("false"),
       })
       .parse(req.query);
@@ -603,6 +608,11 @@ export async function createApp(options: AppOptions) {
         : isNull(memories.deletedAt),
       q.year ? sql`substr(${memories.eventDate},1,4) = ${q.year}` : undefined,
       q.category ? eq(memories.category, q.category) : undefined,
+      q.collectionId === "unassigned"
+        ? isNull(memories.collectionId)
+        : q.collectionId
+          ? eq(memories.collectionId, q.collectionId)
+          : undefined,
     );
     const rows = db
       .select({
@@ -611,6 +621,7 @@ export async function createApp(options: AppOptions) {
         eventDate: memories.eventDate,
         description: sql<string>`substr(${memories.description},1,240)`,
         category: memories.category,
+        collectionId: memories.collectionId,
         author: users.name,
         version: memories.version,
         deletedAt: memories.deletedAt,
@@ -700,12 +711,29 @@ export async function createApp(options: AppOptions) {
       )
         fail(400, "Ordine o copertina delle fotografie non validi.");
       db.transaction((tx) => {
+        const previous = editing ? activeMemory(id) : undefined;
+        const collectionId =
+          input.memory.collectionId === undefined
+            ? previous?.category === input.memory.category
+              ? previous.collectionId
+              : null
+            : input.memory.collectionId;
+        if (collectionId) {
+          const collection = tx
+            .select()
+            .from(collections)
+            .where(eq(collections.id, collectionId))
+            .get();
+          if (!collection || collection.category !== input.memory.category)
+            fail(400, "Scegli un album del capitolo selezionato.");
+        }
+        const data = { ...input.memory, collectionId };
         if (editing) {
           versionCheck(id, input.version ?? 0);
           const updated = tx
             .update(memories)
             .set({
-              ...input.memory,
+              ...data,
               version: sql`${memories.version}+1`,
               updatedAt: now(),
             })
@@ -723,7 +751,7 @@ export async function createApp(options: AppOptions) {
           tx.insert(memories)
             .values({
               id,
-              ...input.memory,
+              ...data,
               authorId: identity(req).id,
               createdAt: now(),
               updatedAt: now(),
@@ -888,6 +916,7 @@ export async function createApp(options: AppOptions) {
         return { ok: true };
       },
     });
+  registerCollections(app, db);
   app.get("/api/albums", async () =>
     categories.map((category) => {
       const where = and(

@@ -1,5 +1,11 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Fragment, lazy, Suspense, useEffect, useRef, useState } from "react";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useViewTransitionState,
+} from "react-router-dom";
+import { MotionLink as Link } from "../navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -13,6 +19,7 @@ import {
   Heart,
   Download,
   Images,
+  Play,
 } from "lucide-react";
 import { api, formatDate, formatTime, photoUrl } from "../api";
 import type { Memory, Comment, Photo } from "../types";
@@ -21,6 +28,9 @@ import { Loading, ErrorState, Avatar, Dialog, Thread } from "../components";
 const PhotoPositionDialog = lazy(
   () => import("../components/PhotoPositionDialog"),
 );
+import DiaryBrowser from "../components/DiaryBrowser";
+import { SeasonAccent, photoTransition, useMotion, useSeason } from "../motion";
+const PhotoCinema = lazy(() => import("../components/PhotoCinema"));
 export default function Detail() {
   const { id } = useParams();
   const navigate = useNavigate(),
@@ -35,15 +45,45 @@ export default function Detail() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const [positionPhoto, setPositionPhoto] = useState<Photo | null>(null);
+  const [cinema, setCinema] = useState(false);
+  const transitioning = useViewTransitionState(location.pathname),
+    nativeEntry = useRef(false);
+  if (transitioning) nativeEntry.current = true;
+  const { effective } = useMotion(),
+    season = useSeason(query.data?.eventDate);
   if (query.isPending) return <Loading />;
   if (query.error)
     return (
       <ErrorState error={query.error} retry={() => void query.refetch()} />
     );
   const m = query.data;
+  const focal =
+    m.photos.find((photo) => photo.id === location.state?.focusPhoto) ??
+    m.photos.find((photo) => photo.isCover) ??
+    m.photos[0];
+  const ordered = focal
+    ? [focal, ...m.photos.filter((photo) => photo.id !== focal.id)]
+    : [];
+  const from =
+    typeof location.state?.from === "string" &&
+    /^\/(?:timeline|albums|world)?(?:[/?]|$)/.test(location.state.from)
+      ? location.state.from
+      : "/timeline";
+  const located = ordered.find(
+    (photo) => photo.latitude !== null && photo.longitude !== null,
+  );
+  const story = (
+    <p className="memory-description">
+      {m.description || "A volte bastano le immagini, per ricordare tutto."}
+    </p>
+  );
   return (
-    <article className="page detail-page">
-      <Link to="/timeline" className="back-link">
+    <article
+      className="page detail-page diary-opening"
+      data-season={season}
+      data-native-entry={nativeEntry.current}
+    >
+      <Link to={from} className="back-link">
         <ArrowLeft size={16} />
         Tra i nostri ricordi
       </Link>
@@ -60,96 +100,157 @@ export default function Detail() {
           </time>
         </span>
         <h1>{m.title}</h1>
-        <div className="detail-byline">
-          <span>Una pagina di {m.author}</span>
-          {m.location && (
-            <span>
-              <MapPin size={15} />
-              {m.location}
-            </span>
-          )}
-        </div>
-        <div className="detail-tools">
-          <Link className="button secondary" to={`/memories/${m.id}/edit`}>
-            <Pencil size={16} />
-            Modifica
-          </Link>
-          <button
-            className="icon-button"
-            aria-label="Sposta nel cestino"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2 size={18} />
-          </button>
-        </div>
       </div>
-      <section className="diary-page paper">
-        <Thread />
-        <span className="eyebrow story-label">DA QUESTO GIORNO, CON AMORE</span>
-        <p className="memory-description">
-          {m.description || "A volte bastano le immagini, per ricordare tutto."}
-        </p>
-        {m.photos.length ? (
-          <div className="detail-gallery">
-            {m.photos.map((p, i) => (
-              <div className="gallery-item" key={p.id}>
-                <button
-                  className="polaroid gallery-photo"
-                  key={p.id}
-                  onClick={() => setLightbox(i)}
-                  aria-label={"Apri fotografia " + (i + 1)}
-                >
-                  <img
-                    src={photoUrl(p.id, i === 0 ? "display" : "thumb")}
-                    alt={`${m.title} — fotografia ${i + 1}`}
-                    loading={i === 0 ? "eager" : "lazy"}
-                  />
-                  <span className="handwritten">
-                    {i === 0 ? "Un pezzetto di noi." : formatDate(m.eventDate)}
-                  </span>
-                </button>
-                <div className="photo-location-actions">
-                  <small>
-                    {p.locationSource === "exif"
-                      ? "Posizione EXIF"
-                      : p.locationSource === "manual"
-                        ? p.latitude === null
-                          ? "Posizione rimossa"
-                          : "Posizione manuale"
-                        : "Senza posizione"}
-                  </small>
-                  <button
-                    type="button"
-                    className="text-link"
-                    onClick={() => setPositionPhoto(p)}
-                    aria-label={
-                      (p.latitude === null ? "Imposta" : "Modifica") +
-                      " posizione foto " +
-                      (i + 1)
+      <DiaryBrowser memory={m}>
+        <section className="diary-page paper">
+          <Thread />
+          {m.photos.length ? (
+            <div className="detail-gallery">
+              {ordered.map((p, i) => (
+                <Fragment key={p.id}>
+                  <div
+                    className={
+                      "gallery-item " + (i === 0 ? "gallery-hero" : "")
                     }
+                    key={p.id}
                   >
-                    <MapPin size={14} />
-                    {p.latitude === null
-                      ? "Imposta posizione"
-                      : "Modifica posizione"}
-                  </button>
-                </div>
+                    <button
+                      className="polaroid gallery-photo"
+                      key={p.id}
+                      onClick={() =>
+                        setLightbox(
+                          m.photos.findIndex((photo) => photo.id === p.id),
+                        )
+                      }
+                      aria-label={"Apri fotografia " + (i + 1)}
+                    >
+                      <img
+                        src={photoUrl(p.id, i === 0 ? "display" : "thumb")}
+                        alt={`${m.title} — fotografia ${i + 1}`}
+                        loading={i === 0 ? "eager" : "lazy"}
+                        style={photoTransition(
+                          m.id,
+                          effective === "full" && p.id === focal?.id,
+                        )}
+                      />
+                      <span className="handwritten">
+                        {i === 0
+                          ? "Un pezzetto di noi."
+                          : formatDate(m.eventDate)}
+                      </span>
+                    </button>
+                    <div className="photo-location-actions">
+                      <small>
+                        {p.locationSource === "exif"
+                          ? "Posizione EXIF"
+                          : p.locationSource === "manual"
+                            ? p.latitude === null
+                              ? "Posizione rimossa"
+                              : "Posizione manuale"
+                            : "Senza posizione"}
+                      </small>
+                      <button
+                        type="button"
+                        className="text-link"
+                        onClick={() => setPositionPhoto(p)}
+                        aria-label={
+                          (p.latitude === null ? "Imposta" : "Modifica") +
+                          " posizione foto " +
+                          (i + 1)
+                        }
+                      >
+                        <MapPin size={14} />
+                        {p.latitude === null
+                          ? "Imposta posizione"
+                          : "Modifica posizione"}
+                      </button>
+                    </div>
+                  </div>
+                  {i === 0 && (
+                    <div className="detail-story-block">
+                      <SeasonAccent date={m.eventDate} />
+                      <div className="detail-byline">
+                        <span>Una pagina di {m.author}</span>
+                        {m.location && (
+                          <span>
+                            <MapPin size={15} />
+                            {m.location}
+                          </span>
+                        )}
+                      </div>
+                      <div className="memory-experiences">
+                        <button
+                          className="button"
+                          onClick={() => setCinema(true)}
+                        >
+                          <Play size={17} />
+                          Rivivi questo momento
+                        </button>
+                        {located && (
+                          <Link
+                            className="button secondary"
+                            to={"/world?photo=" + located.id}
+                          >
+                            <MapPin size={17} />
+                            Ritrova questo luogo
+                          </Link>
+                        )}
+                      </div>
+                      <span className="eyebrow story-label">
+                        DA QUESTO GIORNO, CON AMORE
+                      </span>
+                      {story}
+                    </div>
+                  )}
+                </Fragment>
+              ))}
+            </div>
+          ) : (
+            <>
+              <SeasonAccent date={m.eventDate} />
+              <div className="detail-byline">
+                <span>Una pagina di {m.author}</span>
+                {m.location && (
+                  <span>
+                    <MapPin size={15} />
+                    {m.location}
+                  </span>
+                )}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="no-photos">
-            <Images size={32} strokeWidth={1} />
-            <p>
-              Un ricordo fatto di parole. Puoi aggiungere le foto quando vuoi.
-            </p>
-          </div>
-        )}
-        <p className="modified tiny">
-          Ultima modifica: {formatTime(m.updatedAt)}
-        </p>
-      </section>
+              {story}
+              <div className="no-photos">
+                <Images size={32} strokeWidth={1} />
+                <p>
+                  Un ricordo fatto di parole. Puoi aggiungere le foto quando
+                  vuoi.
+                </p>
+              </div>
+            </>
+          )}
+          <p className="modified tiny">
+            Ultima modifica: {formatTime(m.updatedAt)}
+          </p>
+        </section>
+      </DiaryBrowser>
+      <div className="detail-tools">
+        <Link className="button secondary" to={`/memories/${m.id}/edit`}>
+          <Pencil size={16} />
+          Modifica
+        </Link>
+        <button
+          className="icon-button"
+          aria-label="Sposta nel cestino"
+          onClick={() => setDeleting(true)}
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
       <Comments memoryId={m.id} />
+      {cinema && (
+        <Suspense fallback={<Loading />}>
+          <PhotoCinema memory={m} onClose={() => setCinema(false)} />
+        </Suspense>
+      )}
       {positionPhoto && (
         <Suspense fallback={<Loading />}>
           <PhotoPositionDialog

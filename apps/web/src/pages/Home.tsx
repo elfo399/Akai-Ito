@@ -13,6 +13,7 @@ import {
   Empty,
 } from "../components";
 import { PaperCard, WashiTape } from "../scrapbook";
+import { usePaperDepth } from "../motion";
 export default function Home() {
   const settings = useQuery({
     queryKey: ["settings"],
@@ -22,6 +23,11 @@ export default function Home() {
     queryKey: ["memories", "recent"],
     queryFn: () => api<MemoryList>("/memories?order=recent"),
   });
+  const depth = usePaperDepth(
+    Boolean(
+      settings.data && memories.data && !settings.error && !memories.error,
+    ),
+  );
   if (settings.isPending || memories.isPending) return <Loading />;
   if (settings.error || memories.error)
     return (
@@ -42,7 +48,7 @@ export default function Home() {
         <span>UN DIARIO DA SCRIVERE IN DUE</span>
         <span>RICORDI, NON COSE.</span>
       </div>
-      <section className="cover-section">
+      <section className="cover-section paper-depth" ref={depth}>
         <PaperCard className="cover-copy">
           <WashiTape />
           <span className="eyebrow">
