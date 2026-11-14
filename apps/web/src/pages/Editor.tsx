@@ -1,5 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +24,8 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { api, ApiError, photoUrl } from "../api";
-import type { Memory, Settings } from "../types";
+import type { Memory, Settings, Collection } from "../types";
+import CollectionForm from "../components/CollectionForm";
 import { PageHeading, Loading, ErrorState, Dialog } from "../components";
 type Selected = { key: string; url: string; file?: File };
 export default function Editor() {
@@ -45,6 +51,12 @@ export default function Editor() {
   );
 }
 function EditorForm({ initial }: { initial?: Memory }) {
+  const [search] = useSearchParams();
+  const [creatingAlbum, setCreatingAlbum] = useState(false);
+  const collectionQuery = useQuery({
+    queryKey: ["collections"],
+    queryFn: () => api<Collection[]>("/collections"),
+  });
   const config = useQuery({
     queryKey: ["settings"],
     queryFn: () => api<Settings>("/settings"),
@@ -67,6 +79,8 @@ function EditorForm({ initial }: { initial?: Memory }) {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<MemoryInput>({
     resolver: zodResolver(memoryInput),
@@ -74,10 +88,21 @@ function EditorForm({ initial }: { initial?: Memory }) {
       title: "",
       eventDate: romeToday(),
       description: "",
-      category: "Momenti speciali",
+      category:
+        categories.find((value) => value === search.get("category")) ??
+        "Momenti speciali",
       location: "",
+      collectionId: search.get("album") || null,
     },
   });
+  const category = watch("category"),
+    previousCategory = useRef(category);
+  useEffect(() => {
+    if (previousCategory.current !== category) {
+      setValue("collectionId", null, { shouldDirty: true });
+      previousCategory.current = category;
+    }
+  }, [category, setValue]);
   const photoDirty = useRef(false);
   useEffect(() => () => urls.current.forEach(URL.revokeObjectURL), []);
   useEffect(() => {
@@ -258,6 +283,45 @@ function EditorForm({ initial }: { initial?: Memory }) {
             </label>
           </div>
           <label>
+            Album {category === "Viaggi" ? "del viaggio" : "di questo ricordo"}
+            <select
+              {...register("collectionId", {
+                setValueAs: (value) => value || null,
+              })}
+              value={watch("collectionId") ?? ""}
+              disabled={collectionQuery.isPending || !!collectionQuery.error}
+            >
+              <option value="">Da organizzare — nessun album</option>
+              {collectionQuery.data
+                ?.filter((a) => a.category === category)
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          {collectionQuery.error ? (
+            <p className="error" role="alert">
+              Gli album non sono disponibili.{" "}
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => void collectionQuery.refetch()}
+              >
+                Riprova
+              </button>
+            </p>
+          ) : (
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => setCreatingAlbum(true)}
+            >
+              + Crea un nuovo album in {category}
+            </button>
+          )}
+          <label>
             Dove eravamo?
             <input
               maxLength={200}
@@ -328,7 +392,11 @@ function EditorForm({ initial }: { initial?: Memory }) {
                 }
                 key={p.key}
               >
-                <img src={p.url} alt={"Fotografia " + (i + 1)} />
+                <img
+                  src={p.url}
+                  alt={"Fotografia " + (i + 1)}
+                  className={p.file ? "photo-fresh" : undefined}
+                />
                 <div className="preview-caption">
                   <span>{String(i + 1).padStart(2, "0")}</span>
                   {cover === p.key && (
@@ -415,6 +483,13 @@ function EditorForm({ initial }: { initial?: Memory }) {
           </button>
         </div>
       </form>
+      {creatingAlbum && (
+        <CollectionForm
+          category={category}
+          onClose={() => setCreatingAlbum(false)}
+          onSaved={(id) => setValue("collectionId", id, { shouldDirty: true })}
+        />
+      )}
       {leaving && (
         <Dialog
           title="Lasciamo questa pagina?"

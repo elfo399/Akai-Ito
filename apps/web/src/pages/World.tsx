@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Globe2,
   Heart,
@@ -25,6 +25,7 @@ import GeoMap from "../components/GeoMap";
 import { WashiTape } from "../scrapbook";
 import { useReducedMotion } from "../world-hooks";
 import "../world.css";
+import MapJourney, { useMapJourney } from "../components/MapJourney";
 
 export default function World() {
   const query = useQuery({
@@ -39,13 +40,19 @@ export default function World() {
   return <WorldDiary data={query.data} />;
 }
 function WorldDiary({ data }: { data: WorldData }) {
+  const [search] = useSearchParams();
+  const stage = useRef<HTMLDivElement>(null);
   const today = romeToday(),
     last = civilDayNumber(today);
   const first = Math.min(last, civilDayNumber(data.firstDate ?? today));
   const [day, setDay] = useState(last);
-  const [playing, setPlaying] = useState(false);
   const [postcardLimit, setPostcardLimit] = useState(12);
   const reduced = useReducedMotion();
+  const journey = useMapJourney(data.photos, (date) =>
+    setDay(civilDayNumber(date)),
+  );
+  const playing = journey.playing;
+  const focused = data.photos.find((photo) => photo.id === search.get("photo"));
   const selected = Math.max(first, Math.min(last, day)),
     date = dateFromDayNumber(selected);
   const photos = useMemo(
@@ -55,29 +62,20 @@ function WorldDiary({ data }: { data: WorldData }) {
   const places = useMemo(() => new Set(photos.map(placeKey)).size, [photos]);
   const collections = useMemo(() => groupWorldPhotos(photos, 19), [photos]);
   useEffect(() => {
-    if (!playing || reduced) return;
-    const interval = window.setInterval(
-      () =>
-        setDay((value) =>
-          Math.min(last, value + Math.max(1, Math.ceil((last - first) / 100))),
-        ),
-      250,
-    );
-    return () => window.clearInterval(interval);
-  }, [playing, reduced, first, last]);
-  useEffect(() => {
-    if (selected >= last || reduced) setPlaying(false);
-  }, [selected, last, reduced]);
-  useEffect(() => {
-    const pause = () => {
-      if (document.hidden) setPlaying(false);
-    };
-    document.addEventListener("visibilitychange", pause);
-    return () => document.removeEventListener("visibilitychange", pause);
-  }, []);
+    if (focused) setDay(Math.min(last, civilDayNumber(focused.date)));
+  }, [focused?.id]);
   const choose = (value: number) => {
-    setPlaying(false);
+    journey.close();
     setDay(Math.min(last, Math.max(first, value)));
+  };
+  const startJourney = () => {
+    journey.start();
+    requestAnimationFrame(() => {
+      stage.current?.scrollIntoView({ block: "start", behavior: "instant" });
+      stage.current
+        ?.querySelector<HTMLElement>(".journey-panel")
+        ?.focus({ preventScroll: true });
+    });
   };
   return (
     <div className="page world-page">
@@ -97,7 +95,35 @@ function WorldDiary({ data }: { data: WorldData }) {
           </span>
           <Heart size={19} strokeWidth={1.3} aria-hidden="true" />
         </div>
-        <GeoMap config={data.config} photos={photos} />
+        <div className="world-map-stage" ref={stage}>
+          <GeoMap
+            config={data.config}
+            photos={photos}
+            focus={
+              journey.photo ?? photos.find((photo) => photo.id === focused?.id)
+            }
+            visited={journey.visited}
+            traveling={journey.open ? playing : undefined}
+            onInteract={journey.open ? journey.pause : undefined}
+          />
+          {journey.open && journey.stops[journey.index] && (
+            <MapJourney
+              stop={journey.stops[journey.index]}
+              index={journey.index}
+              total={journey.stops.length}
+              playing={playing}
+              next={journey.next}
+              restart={journey.restart}
+              toggle={journey.toggle}
+              close={journey.close}
+            />
+          )}
+        </div>
+        {search.has("photo") && !focused && (
+          <p className="tiny">
+            Questa fotografia non ha una posizione disponibile nella mappa.
+          </p>
+        )}
         {!data.photos.length && (
           <div className="world-empty">
             <MapNote />
@@ -164,30 +190,31 @@ function WorldDiary({ data }: { data: WorldData }) {
               <button
                 className="button"
                 type="button"
-                disabled={reduced || !data.photos.length || first === last}
+                ref={journey.launcher}
+                disabled={!journey.stops.length}
                 onClick={() => {
-                  if (playing) setPlaying(false);
-                  else {
-                    if (selected >= last) setDay(first);
-                    setPlaying(true);
-                  }
+                  if (!journey.open) startJourney();
+                  else if (reduced) journey.close();
+                  else journey.toggle();
                 }}
               >
                 {playing ? <Pause size={17} /> : <Play size={17} />}
                 {playing
                   ? "Pausa"
-                  : selected > first && selected < last
-                    ? "Riprendi la storia"
+                  : journey.open
+                    ? reduced
+                      ? "Esci dal viaggio"
+                      : "Riprendi la storia"
                     : "Rivivi la nostra storia"}
               </button>
               <button
                 className="icon-button"
                 type="button"
                 aria-label="Riavvia dall’inizio"
-                disabled={!data.photos.length || first === last}
+                disabled={!journey.stops.length}
                 onClick={() => {
-                  setDay(first);
-                  setPlaying(!reduced);
+                  if (!journey.open) startJourney();
+                  else journey.restart();
                 }}
               >
                 <RotateCcw size={19} />
@@ -218,9 +245,8 @@ function WorldDiary({ data }: { data: WorldData }) {
           </p>
           {reduced && (
             <p className="tiny">
-              La riproduzione automatica è disattivata per rispettare la tua
-              preferenza di movimento ridotto. Puoi scegliere ogni data
-              manualmente.
+              Movimento automatico disattivato. Puoi scegliere le date e le
+              tappe manualmente.
             </p>
           )}
           {!!data.unlocatedCount && (

@@ -62,3 +62,15 @@ export type AlbumPhoto = {
   title: string;
   eventDate: string;
 };
+export type Collection = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  version: number;
+  memoryCount: number;
+  photoCount: number;
+  coverId: string | null;
+  firstDate: string | null;
+  lastDate: string | null;
+};

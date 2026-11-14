@@ -2,6 +2,8 @@
 
 _Il diario del nostro filo rosso._
 
+**Ripresa del lavoro da un altro PC o agent:** leggere [HANDOFF.md](HANDOFF.md), con stato della consegna, decisioni, Docker e verifiche. [Album e diari di viaggio](docs/ALBUMS.md).
+
 Un diario fotografico privato per due persone. Ricordi, fotografie e pensieri sono reali e condivisi; il database iniziale è vuoto. Nessuna registrazione pubblica, servizio cloud o dipendenza da servizi esterni durante l’utilizzo.
 
 ## Cosa comprende
@@ -14,7 +16,7 @@ Un diario fotografico privato per due persone. Ricordi, fotografie e pensieri so
 - Fotografie JPEG, PNG e WebP: upload multiplo, anteprime, ordine, copertina, rimozione, miniature e immagini ottimizzate.
 - Galleria con visualizzatore, frecce, tastiera, swipe e download dell’originale.
 - Commenti condivisi; modifica ed eliminazione riservate all’autore.
-- Album automatici per categoria, senza duplicare i file, con collegamenti ai ricordi.
+- Album con nome dentro ogni categoria: un diario per ogni viaggio, con più ricordi/giornate, foto separate e gestione delle assegnazioni senza duplicare i file.
 - **Il nostro mondo**: mappa fotografica privata, timeline, riproduzione della storia, EXIF e posizioni manuali. [Utilizzo, API e importazione dei metadati](docs/WORLD.md).
 - Impostazioni condivise e profilo personale con avatar.
 - Cestino, ripristino e cancellazione definitiva con conferma esplicita.

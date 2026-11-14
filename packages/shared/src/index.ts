@@ -21,6 +21,7 @@ export const memoryInput = z.object({
   description: z.string().max(12000),
   category: z.enum(categories),
   location: z.string().trim().max(200),
+  collectionId: z.string().uuid().nullable().optional(),
 });
 export const memoryUpdate = memoryInput.extend({
   version: z.number().int().positive(),

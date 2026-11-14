@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useViewTransitionState } from "react-router-dom";
+import { MotionLink as Link, MemoryLink } from "./navigation";
 import {
   BookHeart,
   Heart,
@@ -19,6 +20,14 @@ import { useAuth } from "./auth";
 import { formatDate, photoUrl } from "./api";
 import type { MemoryCardData } from "./types";
 import { ThreadMark, WashiTape } from "./scrapbook";
+import {
+  Intro,
+  SeasonAccent,
+  photoTransition,
+  useDevelopPhoto,
+  useMotion,
+  useSeason,
+} from "./motion";
 export function Thread({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -52,6 +61,7 @@ const links = [
 ];
 export function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
+  const transitioning = useViewTransitionState(pathname);
   const { user, logout } = useAuth();
   const [logoutError, setLogoutError] = useTransientError();
   const isActive = (to: string) =>
@@ -60,13 +70,9 @@ export function Layout({ children }: { children: ReactNode }) {
       : pathname.startsWith(to) ||
         (to === "/timeline" && pathname.startsWith("/memories")) ||
         (to === "/settings" && pathname === "/trash");
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-    const main = document.getElementById("content");
-    main?.focus({ preventScroll: true });
-  }, [pathname]);
   return (
     <>
+      <Intro />
       <a className="skip" href="#content">
         Vai al contenuto
       </a>
@@ -105,7 +111,11 @@ export function Layout({ children }: { children: ReactNode }) {
           {logoutError}
         </p>
       )}
-      <main id="content" tabIndex={-1}>
+      <main
+        id="content"
+        tabIndex={-1}
+        className={transitioning ? "route-transitioning" : ""}
+      >
         {children}
       </main>
       <footer>
@@ -229,8 +239,16 @@ export function Empty({
   );
 }
 export function MemoryCard({ memory }: { memory: MemoryCardData }) {
+  const { effective } = useMotion();
+  const season = useSeason(memory.eventDate);
+  const develop = useDevelopPhoto(memory.coverId ?? memory.id);
   return (
-    <Link to={`/memories/${memory.id}`} className="memory-card polaroid">
+    <MemoryLink
+      memoryId={memory.id}
+      photoId={memory.coverId}
+      className="memory-card polaroid"
+      data-season={season}
+    >
       <WashiTape rose />
       <div className="photo-frame">
         {memory.coverId ? (
@@ -238,6 +256,9 @@ export function MemoryCard({ memory }: { memory: MemoryCardData }) {
             src={photoUrl(memory.coverId)}
             alt={memory.title}
             loading="lazy"
+            ref={develop}
+            className="photo-develop"
+            style={photoTransition(memory.id, effective === "full")}
           />
         ) : (
           <div className="photo-placeholder">
@@ -249,6 +270,7 @@ export function MemoryCard({ memory }: { memory: MemoryCardData }) {
       </div>
       <div className="polaroid-caption">
         <span className="date">{formatDate(memory.eventDate)}</span>
+        <SeasonAccent date={memory.eventDate} />
         <h3>
           {memory.title}
           <ArrowUpRight size={18} />
@@ -268,7 +290,7 @@ export function MemoryCard({ memory }: { memory: MemoryCardData }) {
           </span>
         </div>
       </div>
-    </Link>
+    </MemoryLink>
   );
 }
 export function Dialog({
