@@ -31,6 +31,7 @@ import { mapConfig } from "./map-config.js";
 import { openDb } from "./db.js";
 import { registerCollections } from "./collections.js";
 import { DiaryLock, lockExceptions, registerDiaryLock } from "./diary-lock.js";
+import { backupControl, registerBackup, type BackupControl } from "./backup.js";
 import {
   users,
   sessions,
@@ -67,6 +68,7 @@ export type AppOptions = {
   trustProxy?: boolean;
   loginLimit?: number;
   clock?: () => number;
+  backupControl?: BackupControl;
 };
 
 export async function createApp(options: AppOptions) {
@@ -220,6 +222,7 @@ export async function createApp(options: AppOptions) {
     if (!lockExceptions.has(route)) diaryLock.unlocked(session.sessionId);
   });
   registerDiaryLock(app, diaryLock);
+  registerBackup(app, diaryLock, options.backupControl ?? backupControl());
   const identity = (r: FastifyRequest) => r.identity!;
   const idParam = (r: FastifyRequest) =>
     z.object({ id: z.string().uuid() }).parse(r.params).id;

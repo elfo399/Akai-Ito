@@ -149,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.dataset.diaryProtected = String(phase !== "unlocked");
+    root.dataset.diaryGate = String(phase === "locked" || phase === "checking");
     if (!document.hidden) {
       delete root.dataset.diaryShield;
       focusManager.setFocused(phase === "unlocked");

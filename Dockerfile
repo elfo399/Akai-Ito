@@ -10,7 +10,7 @@ COPY . .
 
 # Jenkins can run the same checks on AMD64 or directly on the ARM64 agent.
 FROM source AS ci
-RUN npm run typecheck && npm run lint && npm test && npm run build
+RUN python3 -B scripts/test-vault-control.py && python3 -B scripts/test-vault-files.py && npm run typecheck && npm run lint && npm test && npm run build
 
 FROM source AS build
 RUN npm run build && npm prune --omit=dev

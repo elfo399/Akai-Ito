@@ -151,6 +151,25 @@ def atomic(file, content):
     os.replace(temp, file)
 
 
+def read_status(state):
+    attempts = []
+    for file in (state / "attempts").glob("*.json"):
+        if file.is_symlink():
+            raise ValueError("Symlink state")
+        attempts.append(json.loads(file.read_text()))
+    attempts.sort(key=lambda r: (r["startedAt"], r["id"]), reverse=True)
+    backups = [r for r in attempts if r["operation"] == "backup"]
+    successful = [r for r in backups if r["result"] == "success"]
+    drills = [r for r in attempts if r["operation"] == "test-restore" and r["result"] == "success"]
+    inventory_file = state / "inventory.json"
+    if inventory_file.is_symlink():
+        raise ValueError("Symlink inventory")
+    return {"lastAttempt": backups[0] if backups else None,
+            "lastSuccess": successful[0] if successful else None,
+            "lastRestoreTest": drills[0] if drills else None,
+            "inventory": json.loads(inventory_file.read_text()) if inventory_file.exists() else None}
+
+
 def main():
     command, *args = sys.argv[1:]
     if command == "checksum":
@@ -185,20 +204,7 @@ def main():
         uuid.UUID(run_id)
         atomic(Path(directory) / (run_id + ".json"), json.load(sys.stdin))
     elif command == "status":
-        state = Path(args[0])
-        attempts = []
-        for file in (state / "attempts").glob("*.json"):
-            if file.is_symlink():
-                raise ValueError("Symlink state")
-            attempts.append(json.loads(file.read_text()))
-        attempts.sort(key=lambda r: (r["startedAt"], r["id"]), reverse=True)
-        backups = [r for r in attempts if r["operation"] == "backup"]
-        successful = [r for r in backups if r["result"] == "success"]
-        drills = [r for r in attempts if r["operation"] == "test-restore" and r["result"] == "success"]
-        print(json.dumps({"lastAttempt": backups[0] if backups else None,
-                          "lastSuccess": successful[0] if successful else None,
-                          "lastRestoreTest": drills[0] if drills else None,
-                          "inventory": json.loads((state / "inventory.json").read_text()) if (state / "inventory.json").exists() else None}))
+        print(json.dumps(read_status(Path(args[0]))))
     else:
         raise ValueError("Unknown operation")
 

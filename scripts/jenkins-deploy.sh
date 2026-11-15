@@ -21,15 +21,15 @@ command -v flock >/dev/null
 docker image inspect "$image" >/dev/null
 deploy_dir=$(cd "$deploy_dir" && pwd -P)
 backup_lock "$deploy_dir"
+# Install the private host bridge before the app receives its read-only socket mount.
+bash "$script_dir/install-vault-control.sh" "$deploy_dir" "$project"
 
 compose() {
     if [ -f "$deploy_dir/compose.proxy.yml" ]; then
-        docker compose --project-name "$project" --project-directory "$deploy_dir" \
-            --env-file "$deploy_dir/.env" -f docker-compose.yml -f "$deploy_dir/compose.proxy.yml" "$@"
-    else
-        docker compose --project-name "$project" --project-directory "$deploy_dir" \
-            --env-file "$deploy_dir/.env" -f docker-compose.yml "$@"
+        set -- -f "$deploy_dir/compose.proxy.yml" "$@"
     fi
+    docker compose --project-name "$project" --project-directory "$deploy_dir" \
+        --env-file "$deploy_dir/.env" -f docker-compose.yml -f "$deploy_dir/compose.vault.yml" "$@"
 }
 # Validate config before stopping any existing application.
 APP_IMAGE="$image" compose config --quiet

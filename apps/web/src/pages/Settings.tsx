@@ -11,6 +11,7 @@ import {
   Check,
   SlidersHorizontal,
   ArrowUpRight,
+  Archive,
 } from "lucide-react";
 import { api, photoUrl } from "../api";
 import type { Settings, MemoryList, Memory } from "../types";
@@ -26,8 +27,15 @@ import { Pagination } from "./Timeline";
 import DiaryProtection from "../components/DiaryProtection";
 import { MotionSettings } from "../motion";
 import SeasonalParticleSettings from "../components/SeasonalParticleSettings";
+import BackupSettings from "../components/BackupSettings";
 import "../settings.css";
 const sections = [
+  {
+    id: "backup",
+    label: "Backup",
+    note: "Copie e recupero dei ricordi",
+    icon: Archive,
+  },
   {
     id: "diary",
     label: "Il nostro diario",
@@ -153,6 +161,15 @@ function SettingsForms({ initial }: { initial: Settings }) {
           </p>
         </aside>
         <div className="settings-content">
+          <section
+            role="tabpanel"
+            id="settings-panel-backup"
+            aria-labelledby="settings-tab-backup"
+            hidden={section !== "backup"}
+            tabIndex={0}
+          >
+            {section === "backup" && <BackupSettings />}
+          </section>
           {feedbackSection === section && message && (
             <p className="success" role="status">
               {message}

@@ -1,5 +1,7 @@
 # Akai Ito — Memory Vault
 
+**Aggiornamento 15 novembre 2026:** la configurazione è disponibile anche in **Impostazioni → Backup**. Leggere [BACKUP-SETTINGS.md](BACKUP-SETTINGS.md) per collegamento privato all’host, destinazioni, cifratura e attivazione esplicita dei timer. I paragrafi sotto descrivono il primo rilascio CLI e la procedura di recupero; il precedente vincolo di sola preparazione locale è superato dalla nuova richiesta di pubblicazione. Un timer rimane disattivato finché l’utente non configura le copie.
+
 Sistema operativo di backup **Linux**, da eseguire sull'host Docker. Non aggiunge una pagina web, un database o un servizio applicativo permanente. Branch `feat/memory-vault-backup`; preparato e collaudato localmente con dati sintetici. **Non è attivo in produzione**: nessun timer installato, push, Jenkins o modifica dei volumi reali.
 
 ## Strategia scelta

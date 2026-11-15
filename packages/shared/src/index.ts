@@ -1,5 +1,6 @@
 import { z } from "zod";
 export * from "./world.js";
+export * from "./backup.js";
 export const categories = [
   "Appuntamenti",
   "Viaggi",
