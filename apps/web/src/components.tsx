@@ -75,12 +75,69 @@ export function Layout({ children }: { children: ReactNode }) {
     <>
       <SeasonalAtmosphere />
       <Intro />
-      <a className="skip" href="#content">
-        Vai al contenuto
-      </a>
-      <header className="site-header">
-        <Logo />
-        <nav className="desktop-nav" aria-label="Navigazione principale">
+      <div className="diary-shell">
+        <a className="skip" href="#content">
+          Vai al contenuto
+        </a>
+        <header className="site-header diary-binding">
+          <Logo />
+          <div className="binding-title" aria-hidden="true">
+            <span>LE NOSTRE PAGINE</span>
+            <p>Indice del diario</p>
+          </div>
+          <nav className="desktop-nav" aria-label="Navigazione principale">
+            {links.map(({ to, icon: Icon, label }, index) => (
+              <Link
+                key={to}
+                to={to}
+                className={isActive(to) ? "active" : ""}
+                aria-current={isActive(to) ? "page" : undefined}
+              >
+                <span className="bookmark-number" aria-hidden="true">
+                  0{index + 1}
+                </span>
+                <span className="bookmark-label">
+                  <Icon size={16} aria-hidden="true" />
+                  {label}
+                </span>
+              </Link>
+            ))}
+          </nav>
+          <div className="header-user">
+            <Avatar id={user!.id} name={user!.name} avatar={user!.avatar} />
+            <span className="binding-user-name">
+              <small>Il diario di</small>
+              {user!.name}
+            </span>
+            <button
+              className="icon-button"
+              title="Esci"
+              aria-label="Esci"
+              onClick={() =>
+                void logout().catch((e) => setLogoutError(e.message))
+              }
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        </header>
+        {logoutError && (
+          <p role="alert" className="error layout-error">
+            {logoutError}
+          </p>
+        )}
+        <main
+          id="content"
+          tabIndex={-1}
+          className={transitioning ? "route-transitioning" : ""}
+        >
+          {children}
+        </main>
+        <footer>
+          <span>赤い糸</span> Ogni ricordo è un nodo nel filo che ci unisce.
+          <Heart size={14} />
+        </footer>
+        <nav className="mobile-nav" aria-label="Navigazione mobile">
           {links.map(({ to, icon: Icon, label }) => (
             <Link
               key={to}
@@ -88,55 +145,12 @@ export function Layout({ children }: { children: ReactNode }) {
               className={isActive(to) ? "active" : ""}
               aria-current={isActive(to) ? "page" : undefined}
             >
-              <Icon size={16} />
-              {label}
+              <Icon size={21} />
+              <span>{label}</span>
             </Link>
           ))}
         </nav>
-        <div className="header-user">
-          <Avatar id={user!.id} name={user!.name} avatar={user!.avatar} />
-          <span>{user!.name}</span>
-          <button
-            className="icon-button"
-            title="Esci"
-            aria-label="Esci"
-            onClick={() =>
-              void logout().catch((e) => setLogoutError(e.message))
-            }
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
-      </header>
-      {logoutError && (
-        <p role="alert" className="error">
-          {logoutError}
-        </p>
-      )}
-      <main
-        id="content"
-        tabIndex={-1}
-        className={transitioning ? "route-transitioning" : ""}
-      >
-        {children}
-      </main>
-      <footer>
-        <span>赤い糸</span> Ogni ricordo è un nodo nel filo che ci unisce.
-        <Heart size={14} />
-      </footer>
-      <nav className="mobile-nav" aria-label="Navigazione mobile">
-        {links.map(({ to, icon: Icon, label }) => (
-          <Link
-            key={to}
-            to={to}
-            className={isActive(to) ? "active" : ""}
-            aria-current={isActive(to) ? "page" : undefined}
-          >
-            <Icon size={21} />
-            <span>{label}</span>
-          </Link>
-        ))}
-      </nav>
+      </div>
     </>
   );
 }

@@ -443,7 +443,10 @@ export function RouteViewport() {
       const main = document.getElementById("content");
       if (!main || main.querySelector('.status[role="status"]')) return;
       window.scrollTo({ top: target, behavior: "instant" });
-      main.focus({ preventScroll: true });
+      // URL-backed filters can update the page while their popover stays open.
+      // Keep keyboard focus on the field until the user leaves the panel.
+      if (!document.activeElement?.closest("[popover]:popover-open"))
+        main.focus({ preventScroll: true });
       restored = true;
       observer.disconnect();
     };

@@ -8,6 +8,7 @@ export default function FloatingActions({
   title,
   eyebrow,
   status,
+  triggerText = "Azioni",
   icon,
   triggerRef,
   panelClassName = "",
@@ -17,6 +18,7 @@ export default function FloatingActions({
   title: string;
   eyebrow: string;
   status?: string;
+  triggerText?: string;
   icon?: ReactNode;
   triggerRef?: RefObject<HTMLButtonElement | null>;
   panelClassName?: string;
@@ -45,7 +47,7 @@ export default function FloatingActions({
         aria-haspopup="dialog"
       >
         {open ? <X size={18} /> : (icon ?? <Ellipsis size={21} />)}
-        <span>{status ?? "Azioni"}</span>
+        <span>{status ?? triggerText}</span>
       </button>
       <div
         ref={panel}
