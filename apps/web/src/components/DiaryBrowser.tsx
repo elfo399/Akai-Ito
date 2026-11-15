@@ -6,12 +6,15 @@ import { api, ApiError } from "../api";
 import type { Memory, MemoryList, MemoryCardData } from "../types";
 import { useMotion } from "../motion";
 type Page = Pick<MemoryCardData, "id" | "title" | "eventDate" | "coverId">;
+type RenderActions = (diary: ReactNode, browseStatus?: string) => ReactNode;
 export default function DiaryBrowser({
   memory,
   children,
+  renderActions,
 }: {
   memory: Memory;
   children: ReactNode;
+  renderActions?: RenderActions;
 }) {
   const [params, setParams] = useSearchParams(),
     location = useLocation();
@@ -22,12 +25,19 @@ export default function DiaryBrowser({
     next.delete("browse");
     setParams(next, { replace: true, state: location.state });
   }, [collectionId, params, setParams, location.state]);
-  if (!collectionId) return <>{children}</>;
+  if (!collectionId)
+    return (
+      <>
+        {children}
+        {renderActions?.(null)}
+      </>
+    );
   return (
     <AlbumDiaryBrowser
       key={collectionId}
       memory={memory}
       collectionId={collectionId}
+      renderActions={renderActions}
     >
       {children}
     </AlbumDiaryBrowser>
@@ -37,10 +47,12 @@ function AlbumDiaryBrowser({
   memory,
   collectionId,
   children,
+  renderActions,
 }: {
   memory: Memory;
   collectionId: string;
   children: ReactNode;
+  renderActions?: RenderActions;
 }) {
   const [params] = useSearchParams(),
     location = useLocation(),
@@ -148,11 +160,12 @@ function AlbumDiaryBrowser({
     if (!enabled) return;
     const key = (event: KeyboardEvent) => {
       if (
-        document.querySelector("dialog[open]") ||
+        document.querySelector("dialog[open], [popover]:popover-open") ||
         (event.target instanceof Element &&
           event.target.closest(
             "input,textarea,select,button,a,[contenteditable=true]",
-          ))
+          ) &&
+          !event.target.closest(".memory-actions-trigger"))
       )
         return;
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
@@ -297,7 +310,16 @@ function AlbumDiaryBrowser({
       >
         {children}
       </div>
-      {toolbar}
+      {renderActions
+        ? renderActions(
+            toolbar,
+            enabled
+              ? index >= 0
+                ? `Pagina ${index + 1} di ${sequence.data?.length ?? 0}`
+                : "Diario"
+              : undefined,
+          )
+        : toolbar}
     </div>
   );
 }

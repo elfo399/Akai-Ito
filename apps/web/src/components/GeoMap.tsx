@@ -7,6 +7,7 @@ import {
   useMap,
   useMapEvents,
   Polyline,
+  ScaleControl,
 } from "react-leaflet";
 import { DomEvent, divIcon, latLngBounds } from "leaflet";
 import { Link } from "react-router-dom";
@@ -278,6 +279,7 @@ export default function GeoMap({
   visited = [],
   traveling,
   onInteract,
+  showScale = false,
 }: {
   config: MapConfig;
   photos?: WorldPhoto[];
@@ -287,6 +289,7 @@ export default function GeoMap({
   visited?: WorldPhoto[];
   traveling?: boolean;
   onInteract?: () => void;
+  showScale?: boolean;
 }) {
   const reduced = useReducedMotion();
   const [tileError, setTileError] = useState(false);
@@ -324,6 +327,7 @@ export default function GeoMap({
           }}
         />
         <MapSetup photos={photos} point={point} onSelect={onSelect} />
+        {showScale && <ScaleControl position="bottomleft" imperial={false} />}
         <TravelCamera
           focus={focus}
           traveling={traveling}
@@ -378,6 +382,7 @@ function TravelCamera({
     last = useRef<string | undefined>(undefined);
   useMapEvents({ dragstart: () => onInteract?.() });
   useEffect(() => {
+    if (!map.getPane("mapPane")) return;
     if (!focus) {
       map.stop();
       last.current = undefined;
@@ -403,7 +408,9 @@ function TravelCamera({
         easeLinearity: 0.25,
       });
     return () => {
-      map.stop();
+      // MapContainer may already have removed Leaflet's panes before child cleanup.
+      // remove() stops its animation itself; stop() would then read a missing pane.
+      if (map.getPane("mapPane")) map.stop();
     };
   }, [
     map,

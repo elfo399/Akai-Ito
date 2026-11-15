@@ -42,7 +42,12 @@ afterEach(() => {
   clients.forEach((client) => client.clear());
   clients.length = 0;
 });
-function render(item: Memory, browse = false, sequence?: typeof pages) {
+function render(
+  item: Memory,
+  browse = false,
+  sequence?: typeof pages,
+  actions = false,
+) {
   const client = new QueryClient();
   clients.push(client);
   if (sequence) client.setQueryData(["diary-sequence", collectionId], sequence);
@@ -54,6 +59,14 @@ function render(item: Memory, browse = false, sequence?: typeof pages) {
         children: createElement(DiaryBrowser, {
           memory: item,
           children: createElement("p", null, "Racconto sempre visibile"),
+          renderActions: actions
+            ? (diary, status) =>
+                createElement(
+                  "aside",
+                  { "data-diary-status": status },
+                  diary ? "Azioni dell’album" : "Azioni senza diario",
+                )
+            : undefined,
         }),
       }),
     }),
@@ -62,6 +75,17 @@ function render(item: Memory, browse = false, sequence?: typeof pages) {
 }
 
 describe("Il diario appartiene a un album, non ai ricordi da organizzare", () => {
+  it("le azioni flottanti non offrono un diario ai ricordi senza album", () => {
+    const { html, client } = render(memory, false, undefined, true);
+    expect(html).toContain("Azioni senza diario");
+    expect(html).not.toContain("Sfoglia il diario");
+    expect(client.getQueryCache().getAll()).toHaveLength(0);
+  });
+  it("il pulsante flottante riceve il contatore della pagina dell'album", () => {
+    const { html } = render({ ...memory, collectionId }, true, pages, true);
+    expect(html).toContain('data-diary-status="Pagina 1 di 2"');
+    expect(html).toContain("Azioni dell’album");
+  });
   it("mostra il ricordo senza offrire lo sfogliamento quando manca l'album", () => {
     const { html, client } = render(memory);
     expect(html).toContain("Racconto sempre visibile");

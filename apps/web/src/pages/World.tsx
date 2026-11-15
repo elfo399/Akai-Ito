@@ -9,6 +9,7 @@ import {
   RotateCcw,
   CalendarDays,
   ArrowUpRight,
+  MapPinned,
 } from "lucide-react";
 import {
   civilDayNumber,
@@ -26,6 +27,7 @@ import { WashiTape } from "../scrapbook";
 import { useReducedMotion } from "../world-hooks";
 import "../world.css";
 import MapJourney, { useMapJourney } from "../components/MapJourney";
+import "../diary-map.css";
 
 export default function World() {
   const query = useQuery({
@@ -90,22 +92,56 @@ function WorldDiary({ data }: { data: WorldData }) {
       >
         <WashiTape />
         <div className="world-map-heading">
-          <span className="handwritten">
-            <Globe2 size={19} /> I posti in cui siamo stati noi.
+          <div>
+            <span className="eyebrow">
+              <MapPinned size={14} aria-hidden="true" /> COORDINATE DA CUSTODIRE
+            </span>
+            <h2>L’atlante dei nostri ricordi</h2>
+            <p className="handwritten">I posti in cui siamo stati noi.</p>
+          </div>
+          <span className="atlas-stamp" aria-hidden="true">
+            <Globe2 size={24} strokeWidth={1} />
+            <span>IL NOSTRO MONDO</span>
+            <Heart size={12} strokeWidth={1.2} />
           </span>
-          <Heart size={19} strokeWidth={1.3} aria-hidden="true" />
         </div>
         <div className="world-map-stage" ref={stage}>
-          <GeoMap
-            config={data.config}
-            photos={photos}
-            focus={
-              journey.photo ?? photos.find((photo) => photo.id === focused?.id)
-            }
-            visited={journey.visited}
-            traveling={journey.open ? playing : undefined}
-            onInteract={journey.open ? journey.pause : undefined}
-          />
+          <div className="world-atlas-map">
+            <GeoMap
+              config={data.config}
+              photos={photos}
+              focus={
+                journey.photo ??
+                photos.find((photo) => photo.id === focused?.id)
+              }
+              visited={journey.visited}
+              traveling={journey.open ? playing : undefined}
+              onInteract={journey.open ? journey.pause : undefined}
+              showScale
+            />
+            <span className="atlas-compass" aria-hidden="true">
+              <svg viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="30" />
+                <circle cx="50" cy="50" r="33" strokeDasharray="1 5" />
+                <path d="M50 18L57 43L82 50L57 57L50 82L43 57L18 50L43 43Z" />
+                <path className="compass-north" d="M50 18L50 50L43 43Z" />
+                <path className="compass-south" d="M50 50L50 82L57 57Z" />
+                <circle cx="50" cy="50" r="3" />
+                <text x="50" y="11" textAnchor="middle">
+                  N
+                </text>
+                <text x="50" y="98" textAnchor="middle">
+                  S
+                </text>
+                <text x="94" y="54" textAnchor="middle">
+                  E
+                </text>
+                <text x="6" y="54" textAnchor="middle">
+                  O
+                </text>
+              </svg>
+            </span>
+          </div>
           {journey.open && journey.stops[journey.index] && (
             <MapJourney
               stop={journey.stops[journey.index]}
@@ -118,6 +154,13 @@ function WorldDiary({ data }: { data: WorldData }) {
               close={journey.close}
             />
           )}
+        </div>
+        <div className="atlas-caption">
+          <span className="handwritten">Il mondo è più bello, con te.</span>
+          <span>
+            <Heart size={12} aria-hidden="true" /> Ogni segno, un ricordo da
+            ritrovare.
+          </span>
         </div>
         {search.has("photo") && !focused && (
           <p className="tiny">
