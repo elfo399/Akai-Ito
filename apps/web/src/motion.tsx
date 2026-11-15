@@ -12,6 +12,12 @@ import {
 import { useLocation } from "react-router-dom";
 import { useAuth } from "./auth";
 import {
+  particleLevel,
+  seasonMode,
+  type ParticleLevel,
+  type SeasonMode,
+} from "./seasonal";
+import {
   effectiveIntensity,
   motionTokens,
   seasonFor,
@@ -36,6 +42,10 @@ const Context = createContext<{
   effective: Intensity;
   systemReduced: boolean;
   seasons: boolean;
+  particles: ParticleLevel;
+  particleSeason: SeasonMode;
+  setParticles: (value: ParticleLevel) => void;
+  setParticleSeason: (value: SeasonMode) => void;
   setPreference: (value: Intensity) => void;
   setSeasons: (value: boolean) => void;
 }>({
@@ -43,6 +53,10 @@ const Context = createContext<{
   effective: "full",
   systemReduced: false,
   seasons: true,
+  particles: "delicate",
+  particleSeason: "auto",
+  setParticles: () => {},
+  setParticleSeason: () => {},
   setPreference: () => {},
   setSeasons: () => {},
 });
@@ -54,6 +68,12 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     return value === "reduced" || value === "off" ? value : "full";
   });
   const [seasons, setSeasons] = useState(() => read("akai-seasons") !== "off");
+  const [particles, setParticles] = useState(() =>
+    particleLevel(read("akai-particles")),
+  );
+  const [particleSeason, setParticleSeason] = useState(() =>
+    seasonMode(read("akai-particle-season")),
+  );
   const [systemReduced, setSystemReduced] = useState(
     () => matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
@@ -65,6 +85,8 @@ export function MotionProvider({ children }: { children: ReactNode }) {
       const value = read("akai-motion");
       setPreference(value === "off" || value === "reduced" ? value : "full");
       setSeasons(read("akai-seasons") !== "off");
+      setParticles(particleLevel(read("akai-particles")));
+      setParticleSeason(seasonMode(read("akai-particle-season")));
     };
     media.addEventListener("change", change);
     window.addEventListener("storage", storage);
@@ -88,6 +110,16 @@ export function MotionProvider({ children }: { children: ReactNode }) {
         effective,
         systemReduced,
         seasons,
+        particles,
+        particleSeason,
+        setParticles: (value) => {
+          setParticles(value);
+          save("akai-particles", value);
+        },
+        setParticleSeason: (value) => {
+          setParticleSeason(value);
+          save("akai-particle-season", value);
+        },
         setPreference: (value) => {
           setPreference(value);
           save("akai-motion", value);
@@ -127,7 +159,7 @@ export function MotionSettings() {
             [
               "reduced",
               "Ridotti",
-              "Passaggi discreti, senza zoom e movimenti automatici.",
+              "Transizioni discrete, senza zoom o parallasse.",
             ],
             [
               "off",
@@ -154,7 +186,8 @@ export function MotionSettings() {
       {motion.systemReduced && (
         <p className="tiny" role="status">
           Il sistema richiede movimento ridotto: zoom automatici, parallasse e
-          intro rimangono disattivati anche scegliendo effetti completi.
+          intro e particelle rimangono disattivati anche scegliendo effetti
+          completi.
         </p>
       )}
       <label className="experience-checkbox">

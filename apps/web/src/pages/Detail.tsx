@@ -95,6 +95,8 @@ export default function Detail() {
     <article
       className="page detail-page diary-opening"
       data-season={season}
+      data-particle-date={m.eventDate}
+      data-particle-id={m.id}
       data-native-entry={nativeEntry.current}
     >
       <Link to={from} className="back-link">

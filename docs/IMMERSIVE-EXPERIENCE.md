@@ -1,5 +1,7 @@
 # Akai Ito — Immersive Experience
 
+Revisione successiva: **particelle stagionali** su `feat/seasonal-particles`, con petali, farfalle estive, foglie e neve, selezione del ricordo visibile e anteprima in Impostazioni → Aspetto. Architettura, preferenze e budget in [SEASONAL-PARTICLES.md](SEASONAL-PARTICLES.md); stato reale e verifiche aggiornate in `HANDOFF.md`. Le indicazioni sotto sull'assenza di particelle descrivono la revisione precedente. Dopo la preview l'utente ha autorizzato push e merge della versione finale.
+
 Revisione successiva al feedback: gli album sono ora organizzati come **capitolo → singolo viaggio → diario/foto**, con persistenza e gestione dedicate. La foto del ricordo viene mostrata prima dei comandi; nodi, apertura, click e stagioni sono più visibili. Architettura, nuove API/migrazione e verifiche aggiornate sono in [ALBUMS.md](ALBUMS.md). Le sezioni di collaudo sotto descrivono il primo intervento; il totale aggiornato è 71 test.
 
 ## Preview locale

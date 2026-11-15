@@ -1,0 +1,213 @@
+#root {
+  isolation: isolate;
+  --atmosphere-background: var(--cream);
+  --atmosphere-page: var(--paper);
+  --atmosphere-ink: var(--line);
+}
+#root:has(.seasonal-paper-atmosphere[data-active-season="spring"]) {
+  --atmosphere-background: #edf0e5;
+  --atmosphere-page: #eef3e5;
+  --atmosphere-ink: #577344;
+}
+#root:has(.seasonal-paper-atmosphere[data-active-season="summer"]) {
+  --atmosphere-background: #f4e5d9;
+  --atmosphere-page: #faede3;
+  --atmosphere-ink: #9a6548;
+}
+#root:has(.seasonal-paper-atmosphere[data-active-season="autumn"]) {
+  --atmosphere-background: #f4e7d9;
+  --atmosphere-page: #fae7d4;
+  --atmosphere-ink: #955e3e;
+}
+#root:has(.seasonal-paper-atmosphere[data-active-season="winter"]) {
+  --atmosphere-background: #dce5ec;
+  --atmosphere-page: #e5edf3;
+  --atmosphere-ink: #496c85;
+}
+.seasonal-paper-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-color: var(--atmosphere-background);
+  background-image: radial-gradient(#778c9a12 0.6px, transparent 0.6px);
+  background-size: 5px 5px;
+  transition: background-color 1500ms ease;
+}
+#root:has(.seasonal-paper-atmosphere) .detail-page[data-season] .diary-page {
+  background-color: var(--atmosphere-page);
+  border-top-color: var(--atmosphere-ink);
+  transition:
+    background-color 1500ms ease,
+    border-color 1500ms ease;
+}
+.seasonal-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+.seasonal-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.seasonal-atmosphere[data-particle-scope="detail"] {
+  z-index: 3;
+}
+.particle-settings {
+  margin-top: 22px;
+}
+.particle-preferences {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.settings-page .particle-preferences label {
+  margin: 0 0 14px;
+}
+.particle-preferences select {
+  min-height: 44px;
+  font-size: 12px;
+  border-radius: 5px;
+  padding: 10px;
+}
+.settings-page .particle-settings .particle-settings-help {
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 4px 0 20px;
+}
+.particle-preview-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.particle-preview-heading h3 {
+  font-family: var(--serif);
+  font-size: 25px;
+  font-weight: 500;
+}
+.particle-season-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 20px 0 14px;
+}
+.settings-page .particle-season-buttons .button {
+  background: transparent;
+  padding-inline: 5px;
+}
+.settings-page .particle-season-buttons .button[aria-pressed="true"] {
+  background: #e5d2c0;
+  border-color: #b99b83;
+}
+.particle-preview-scene {
+  position: relative;
+  isolation: isolate;
+  height: 270px;
+  overflow: hidden;
+  border: 7px solid #fffdf6;
+  border-bottom-width: 22px;
+  box-shadow: 0 2px 8px #59443f17;
+  background: #f5e8e7;
+  color: #72544f;
+  transition:
+    background-color 1500ms ease,
+    color 1500ms ease;
+}
+.particle-preview-scene[data-preview-season="summer"] {
+  background: #ead2bf;
+  color: #785d47;
+}
+.particle-preview-scene[data-preview-season="autumn"] {
+  background: #eee0c9;
+  color: #73503d;
+}
+.particle-preview-scene[data-preview-season="winter"] {
+  background: #a0b0b7;
+  color: #fffdf5;
+}
+.particle-preview-scene .seasonal-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.particle-preview-caption {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 22px;
+  text-align: center;
+  pointer-events: none;
+}
+.particle-preview-caption .eyebrow {
+  color: inherit;
+  opacity: 0.75;
+  font-size: 9px;
+}
+.particle-preview-caption strong {
+  font-family: var(--hand);
+  font-size: clamp(27px, 3vw, 34px);
+  font-weight: 400;
+  margin: 10px 0 8px;
+}
+.particle-preview-caption p {
+  font-size: 11px;
+  line-height: 1.7;
+  max-width: 260px;
+}
+.settings-page .particle-settings > .particle-preview-status {
+  margin: 16px 0;
+  font-size: 12px;
+}
+.settings-page .particle-preview-scene + .particle-settings-help {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+@media (max-width: 540px) {
+  .particle-preferences {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .particle-season-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .particle-preview-scene {
+    height: 250px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seasonal-canvas {
+    display: none;
+  }
+  .particle-preview-scene {
+    transition: none;
+  }
+  .seasonal-paper-atmosphere,
+  #root:has(.seasonal-paper-atmosphere) .detail-page[data-season] .diary-page {
+    transition: none;
+  }
+}
+html[data-motion="off"] .seasonal-canvas {
+  display: none;
+}
+html[data-motion="off"] .particle-preview-scene {
+  transition: none;
+}
+html[data-motion="off"] .seasonal-paper-atmosphere,
+html[data-motion="off"]
+  #root:has(.seasonal-paper-atmosphere)
+  .detail-page[data-season]
+  .diary-page {
+  transition: none;
+}
