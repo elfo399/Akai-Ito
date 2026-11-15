@@ -2,7 +2,43 @@
 
 Aggiornato il **15 novembre 2026**. Questo documento permette di riprendere il lavoro senza la chat precedente.
 
-## Consegna attuale — le quattro stagioni
+## Consegna attuale — atlante, azioni flottanti e commenti
+
+Il 15 novembre 2026 l'utente ha autorizzato **push e merge su main di tutte le modifiche locali**, incluso questo handoff. La consegna parte da `style/diary-map`, basato su `main` `3216161`, e comprende la mappa in stile diario con terre più leggibili, il menu flottante delle azioni del ricordo, il nuovo campo commenti e la correzione del cleanup Leaflet. Questa autorizzazione sostituisce i precedenti vincoli di sola preview locale riportati nella cronologia sotto. Verificare con Git e Jenkins SHA finale, merge e deployment: `main` avvia la pipeline. Dati Docker e account demo non sono inclusi nel codice.
+
+Verifiche locali concluse: typecheck, lint, **94 test automatici in 6 file**, build Docker healthy e collaudi Chromium descritti sotto. Per riprendere il lavoro, seguire le nuove richieste dell'utente e controllare lo stato effettivo della consegna.
+
+## Campo commenti come biglietto
+
+L'utente ha chiesto di rivedere graficamente la parte in cui si inseriscono i commenti. Il compositore ora è un biglietto crema a righe con margine rosso, avatar e firma in alto, suggerimento e invio compatto sotto il testo. La sezione è centrata e larga al massimo 820 px; il messaggio vuoto è integrato nel biglietto. Su mobile il footer si dispone in colonna e il pulsante resta allineato a destra. Focus visibile sul biglietto e pulsante flottante Azioni nascosto mentre il modulo ha focus, per lasciare libera la scrittura. Il campo di modifica usa le stesse righe; limite 3000 caratteri, API, conferme e logica di invio restano invariati. Nessuna animazione nuova.
+
+File: `apps/web/src/pages/Detail.tsx`, nuovo `apps/web/src/comments.css`. Stesso branch `style/diary-map`, insieme alla mappa e alle azioni flottanti descritte sotto; pubblicazione autorizzata nella consegna attuale. Docker locale aggiornato e healthy su **http://localhost:3000**; dati e volumi preservati.
+
+Verifiche: typecheck, lint, **94 test automatici in 6 file**, build Docker e **26 controlli Chromium**, con screenshot esaminati su desktop e mobile. Nessun overflow a 375/430/768/1280/1440 px; provati stati vuoto/focus/testo, limite caratteri, frecce nel campo, errore con testo conservato, invio riuscito, modifica, annullamento e conferma cancellazione, visibilità del pulsante Azioni e assenza di errori JavaScript. Tutte le scritture commenti sono state simulate, senza cambiare i dati demo. Artefatti ignorati: `.tools/comments-design-qa/` e relativi script/log. Nessun collaudo su dispositivi fisici o Safari/Firefox dichiarato.
+
+## Azioni flottanti nel ricordo, solo locale
+
+L'utente ha chiarito che vuole riunire i pulsanti **Sfoglia il diario, Rivivi, Modifica, ecc.** del ricordo, non i comandi della mappa. Le azioni del dettaglio sono ora nel pulsante flottante **Azioni**, in basso a destra: diario (solo con album), cinema (solo con foto), luogo (solo con coordinate), modifica, posizione delle foto e cestino. Le posizioni multiple si scelgono da una lista con miniature. Sotto le foto resta soltanto la didascalia della posizione; i comandi di invio commento e dei dialoghi restano contestuali ai loro campi. La conferma prima di spostare nel cestino è conservata.
+
+Il pulsante è un portal nel body, quindi segue la viewport anche durante lo scroll. Pannello non modale con Popover API nativa, chiusura con Escape/clic esterno e focus restituito al pulsante. Su telefono resta sopra la barra di navigazione. In modalità diario il pulsante mostra **Pagina N di M**; navigazione, tastiera e swipe rimangono limitati allo stesso album. `DiaryBrowser` espone `renderActions` mantenendo il comportamento precedente come default e non crea sequenze per i ricordi da organizzare. Due test aggiunti per questo contratto.
+
+File: nuovi `components/MemoryActions.tsx` e `memory-actions.css`, integrazione in `pages/Detail.tsx`, `components/DiaryBrowser.tsx` e test `apps/web/test/diary.test.ts`. I collegamenti testuali del menu usano navigazione normale; apertura delle card e sfogliamento conservano le transizioni precedenti. Nel collaudo del ritorno dalla mappa è emerso un errore Leaflet di cleanup: `TravelCamera` ora controlla con `map.getPane("mapPane")` che la mappa esista prima di fermarla. `MapContainer.remove()` ferma già le animazioni quando distrugge i pannelli; una seconda chiamata a `stop()` causava `_leaflet_pos` mancante. Ritorno mappa → ricordo verificato dopo la correzione.
+
+Branch ancora **`style/diary-map`**, con le precedenti rifiniture grafiche della mappa conservate. Tutto solo locale, nessun commit/push richiesto. Preview Docker healthy su **http://localhost:3000**. Superati typecheck/lint, **94 test automatici in 6 file**, build Docker e **34 controlli Chromium**: scroll/focus/Escape/clic esterno, cinema e ritorno, scelta della foto per la posizione, conferma cestino senza cancellazione, editor/mappa e ritorno, diario/tastiera/swipe, ricordi senza album o senza foto, layout e barra mobile a 375/430/768/1280 px. Nessuna scrittura di contenuti nel collaudo. Artefatti ignorati in `.tools/memory-actions-qa/`, log/script sotto `.tools/`. I primi tentativi interrotti per timing o per il bug Leaflet corretto non sono dichiarati come suite concluse; il passaggio finale non ha errori JS. Test solo Chromium, non dispositivi fisici/Safari/Firefox.
+
+## Lavoro locale precedente — mappa come pagina di diario
+
+Ultimo feedback: l'utente approva il nuovo atlante e chiede terre emerse più visibili. Ritoccato solo il filtro delle tessere: maggiore contrasto prima della viratura, terra color carta chiara e mare salvia desaturato, per leggere meglio coste e continenti. Foto, marcatori e comandi non filtrati; cornice e decorazioni invariate. Preview locale aggiornata, nessun push autorizzato per questa revisione.
+
+L'utente ha chiesto di rendere la mappa più simile a una mappa del diario, mostrando il precedente planisfero azzurro. Branch locale **`style/diary-map`**, basato su `main` `3216161`. La consegna delle stagioni è già completata: merge `3216161`, Jenkins #7 SUCCESS e immagine corretta distribuita. Per questa successiva revisione grafica della mappa non sono stati richiesti né eseguiti commit, push o merge.
+
+In **Il nostro mondo** la mappa ora ha un aspetto da atlante cartaceo: tonalità calde/desaturate applicate soltanto alle tessere, cornice di carta con nastro agli angoli, pieghe leggere, timbro, rosa dei venti decorativa e scala metrica reale. Titolo «L’atlante dei nostri ricordi», annotazione sotto la mappa e comandi del tempo più compatti, in beige coerente col resto del diario. Le foto dei segnaposto e dei popup mantengono i colori originali; dimensioni compatte dei marker conservate. Attribuzione e comandi restano visibili/interattivi, decorazioni senza pointer events.
+
+File: nuovo `apps/web/src/diary-map.css` (stili limitati a World), `pages/World.tsx` (cornice/annotazioni), `components/GeoMap.tsx` (prop opzionale `showScale`, false di default, e ScaleControl della libreria già installata). Nessuna nuova dipendenza, backend, posizione, coordinata o dato modificato. Selettore posizione nell'editor mantiene la resa precedente. Il viaggio rimane sulla mappa su desktop e sotto la mappa su telefono; preferenze di movimento ridotto rispettate, particelle stagionali ancora escluse dalla mappa.
+
+Preview Docker healthy e aggiornata: **http://localhost:3000/world**. Verificati typecheck/lint, **92 test automatici**, build Docker e **30 controlli Chromium**, inclusi 375/430/768/1100/1440 px, cartografia caricata, scala/zoom/centra, popup e link al ricordo, filtro data/oggi, viaggio desktop e mobile, movimento ridotto, attribuzione, nessun overflow o errore JS e nessuna scrittura di contenuti. Le foto sono state verificate senza filtri sugli antenati DOM. Gli screenshot iniziali del viaggio durante l'ingresso animato non sono l'esito finale: il collaudo concluso attende l'animazione. Artefatti ignorati in `.tools/diary-map-qa/`, log/script sotto `.tools/`. Nessuna prova su dispositivi fisici o Safari/Firefox dichiarata.
+
+## Consegna precedente — le quattro stagioni
 
 Il 15 novembre 2026, dopo la prova in Docker, l'utente ha chiesto **push e merge su main** della versione finale delle particelle stagionali, compresa l'estate con farfalle corallo/terracotta. Questa richiesta sostituisce il precedente vincolo di sola preview locale. Branch di consegna `feat/seasonal-particles`, basato su `main` `87175e2`; verificare SHA finale, merge e pipeline con Git e Jenkins. La consegna precedente di diario e Impostazioni è completata con `87175e2`, Jenkins #6 SUCCESS.
 

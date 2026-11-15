@@ -2,6 +2,8 @@
 
 La navigazione è **Album → capitolo (es. Viaggi) → album con nome (es. Barcellona) → diario o fotografie**. Ogni album contiene uno o più ricordi; ogni ricordo mantiene fotografie, testo, data, commenti e coordinate.
 
+Le azioni del dettaglio sono raccolte nel pulsante flottante **Azioni**: da lì si apre **Sfoglia il diario**, si rivive il ricordo, si modifica o si gestiscono le posizioni delle foto. Durante lo sfogliamento il pulsante mostra il numero di pagina; tastiera e swipe restano disponibili. Il diario è proposto soltanto ai ricordi assegnati a un album, senza sequenze globali per quelli da organizzare. Stato di consegna in `HANDOFF.md`.
+
 ## Uso
 
 1. Aprire Album e scegliere Viaggi, poi **Nuovo viaggio**. Dare un nome e, se desiderato, una descrizione. Sono consentiti più viaggi con lo stesso nome, distinguibili dalle date dei ricordi.

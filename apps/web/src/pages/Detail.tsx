@@ -19,7 +19,6 @@ import {
   Heart,
   Download,
   Images,
-  Play,
 } from "lucide-react";
 import { api, formatDate, formatTime, photoUrl } from "../api";
 import type { Memory, Comment, Photo } from "../types";
@@ -29,6 +28,8 @@ const PhotoPositionDialog = lazy(
   () => import("../components/PhotoPositionDialog"),
 );
 import DiaryBrowser from "../components/DiaryBrowser";
+import MemoryActions from "../components/MemoryActions";
+import "../comments.css";
 import { SeasonAccent, photoTransition, useMotion, useSeason } from "../motion";
 const PhotoCinema = lazy(() => import("../components/PhotoCinema"));
 export default function Detail() {
@@ -117,7 +118,21 @@ export default function Detail() {
         </span>
         <h1>{m.title}</h1>
       </div>
-      <DiaryBrowser memory={m}>
+      <DiaryBrowser
+        memory={m}
+        renderActions={(diary, browseStatus) => (
+          <MemoryActions
+            memoryId={m.id}
+            photos={ordered}
+            locatedId={located?.id}
+            diary={diary}
+            browseStatus={browseStatus}
+            onCinema={() => setCinema(true)}
+            onPosition={setPositionPhoto}
+            onDelete={() => setDeleting(true)}
+          />
+        )}
+      >
         <section className="diary-page paper">
           <Thread />
           {m.photos.length ? (
@@ -165,44 +180,11 @@ export default function Detail() {
                               : "Posizione manuale"
                             : "Senza posizione"}
                       </small>
-                      <button
-                        type="button"
-                        className="text-link"
-                        onClick={() => setPositionPhoto(p)}
-                        aria-label={
-                          (p.latitude === null ? "Imposta" : "Modifica") +
-                          " posizione foto " +
-                          (i + 1)
-                        }
-                      >
-                        <MapPin size={14} />
-                        {p.latitude === null
-                          ? "Imposta posizione"
-                          : "Modifica posizione"}
-                      </button>
                     </div>
                   </div>
                   {i === 0 && (
                     <div className="detail-story-block">
                       {metadata}
-                      <div className="memory-experiences">
-                        <button
-                          className="button"
-                          onClick={() => setCinema(true)}
-                        >
-                          <Play size={17} />
-                          Rivivi questo momento
-                        </button>
-                        {located && (
-                          <Link
-                            className="button secondary"
-                            to={"/world?photo=" + located.id}
-                          >
-                            <MapPin size={17} />
-                            Ritrova questo luogo
-                          </Link>
-                        )}
-                      </div>
                       <span className="eyebrow story-label">
                         DA QUESTO GIORNO, CON AMORE
                       </span>
@@ -230,19 +212,6 @@ export default function Detail() {
           </p>
         </section>
       </DiaryBrowser>
-      <div className="detail-tools">
-        <Link className="button secondary" to={`/memories/${m.id}/edit`}>
-          <Pencil size={16} />
-          Modifica
-        </Link>
-        <button
-          className="icon-button"
-          aria-label="Sposta nel cestino"
-          onClick={() => setDeleting(true)}
-        >
-          <Trash2 size={18} />
-        </button>
-      </div>
       <Comments memoryId={m.id} />
       {cinema && (
         <Suspense fallback={<Loading />}>
@@ -468,11 +437,6 @@ function Comments({ memoryId }: { memoryId: string }) {
         <ErrorState error={query.error} retry={() => void query.refetch()} />
       ) : (
         <div className="comment-list">
-          {!query.data.length && (
-            <p className="muted">
-              C’è spazio per il primo pensiero, anche una sola parola.
-            </p>
-          )}
           {query.data.map((c) => (
             <div
               className={
@@ -514,6 +478,7 @@ function Comments({ memoryId }: { memoryId: string }) {
                     </label>
                     <textarea
                       id="edit-comment"
+                      className="thought-input"
                       value={editBody}
                       onChange={(e) => setEditBody(e.target.value)}
                       required
@@ -578,22 +543,42 @@ function Comments({ memoryId }: { memoryId: string }) {
             setBody("");
         }}
       >
-        <Avatar id={user!.id} name={user!.name} avatar={user!.avatar} />
-        <label>
-          <span className="sr-only">Il tuo pensiero</span>
+        <div className="comment-compose-heading">
+          <div className="comment-compose-author">
+            <Avatar id={user!.id} name={user!.name} avatar={user!.avatar} />
+            <span>
+              Una nota di <strong>{user!.name}</strong>
+            </span>
+          </div>
+          <Pencil size={17} strokeWidth={1.2} aria-hidden="true" />
+        </div>
+        <label className="sr-only" htmlFor="new-comment">
+          Il tuo pensiero
+        </label>
+        <div className="comment-compose-body">
           <textarea
+            id="new-comment"
+            className="thought-input"
             value={body}
             onChange={(e) => setBody(e.target.value)}
             required
             maxLength={3000}
             rows={3}
-            placeholder="Che cosa ti fa tornare in mente?"
+            placeholder="Che cosa ti fa tornare in mente questo giorno?"
+            aria-describedby="comment-compose-hint"
           />
-        </label>
-        <button className="button" disabled={busy || !body.trim()}>
-          <Send size={16} />
-          Lascia un pensiero
-        </button>
+        </div>
+        <div className="comment-compose-footer">
+          <small id="comment-compose-hint">
+            {query.data?.length === 0
+              ? "Il primo pensiero può essere una sola parola."
+              : "Un piccolo pensiero da rileggere insieme."}
+          </small>
+          <button className="button" disabled={busy || !body.trim()}>
+            <Send size={16} />
+            Lascia un pensiero
+          </button>
+        </div>
       </form>
       {deleteId && (
         <Dialog
