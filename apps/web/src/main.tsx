@@ -6,6 +6,7 @@ import {
   Outlet,
   Navigate,
   useLocation,
+  Link,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./auth";
@@ -23,6 +24,8 @@ import "./world.css";
 import "./immersive.css";
 import "./refinements.css";
 import "./diary-navigation.css";
+import "./mobile-viewport.css";
+import { useMobileViewport } from "./mobile-viewport";
 import { MotionProvider, RouteViewport } from "./motion";
 import Detail from "./pages/Detail";
 import Timeline from "./pages/Timeline";
@@ -39,6 +42,7 @@ const client = new QueryClient({
   },
 });
 function App() {
+  useMobileViewport();
   const { user, loading, error, refresh } = useAuth();
   const location = useLocation();
   if (loading) return <Loading />;
@@ -93,7 +97,7 @@ const router = createBrowserRouter([
         element: (
           <div className="empty">
             <h1>Questa pagina non è nel diario.</h1>
-            <a href="/">Torna alla copertina</a>
+            <Link to="/">Torna alla copertina</Link>
           </div>
         ),
       },

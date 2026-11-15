@@ -1,0 +1,114 @@
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --navigation-height: 0px;
+  --actions-floor: max(24px, var(--safe-bottom));
+  --actions-bottom: calc(var(--navigation-height) + var(--actions-floor));
+  --panel-clearance: calc(var(--actions-bottom) + 60px);
+}
+/* Pages use the stable viewport; overlays fill the currently visible viewport. */
+.diary-shell {
+  padding: var(--safe-top) var(--safe-right) 0 var(--safe-left);
+}
+.diary-shell > main {
+  min-height: calc(100svh - 105px);
+}
+.login-page {
+  min-height: 100svh;
+}
+.dialog[open] {
+  top: var(--visual-top, 0px);
+  bottom: var(--viewport-bottom, 0px);
+  max-width: calc(
+    100vw - max(16px, var(--safe-left)) - max(16px, var(--safe-right))
+  );
+  max-height: calc(
+    var(--visual-height, 100dvh) - max(24px, var(--safe-top)) -
+      max(24px, var(--safe-bottom))
+  );
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.lightbox[open],
+.photo-cinema[open] {
+  top: var(--visual-top, 0px);
+  bottom: auto;
+  height: var(--visual-height, 100dvh);
+  max-height: var(--visual-height, 100dvh);
+}
+.lightbox[open] {
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+.lightbox[open] {
+  display: flex;
+  flex-direction: column;
+}
+.lightbox-toolbar {
+  flex-shrink: 0;
+  min-height: 70px;
+  height: auto;
+}
+.lightbox-view {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.photo-cinema[open] {
+  padding: max(24px, var(--safe-top)) max(20px, var(--safe-right))
+    max(20px, var(--safe-bottom)) max(20px, var(--safe-left));
+}
+.photo-cinema .cinema-stage {
+  min-height: 0;
+}
+.diary-intro {
+  padding: max(24px, var(--safe-top)) max(24px, var(--safe-right))
+    max(24px, var(--safe-bottom)) max(24px, var(--safe-left));
+}
+@media (min-width: 1001px) {
+  .diary-shell .diary-binding {
+    top: var(--safe-top);
+    left: var(--safe-left);
+  }
+}
+@media (max-width: 1000px) {
+  :root {
+    --actions-floor: 16px;
+  }
+  .diary-shell > main {
+    min-height: calc(100svh - 200px);
+  }
+  .diary-shell > .mobile-nav {
+    left: var(--safe-left);
+    right: var(--safe-right);
+    padding-bottom: calc(7px + var(--safe-bottom));
+  }
+  .diary-shell > footer {
+    margin-bottom: calc(var(--navigation-height) + 16px);
+  }
+  .login-page {
+    padding-top: max(24px, var(--safe-top));
+    padding-bottom: max(24px, var(--safe-bottom));
+    padding-left: max(22px, var(--safe-left));
+    padding-right: max(22px, var(--safe-right));
+  }
+  :root[data-keyboard-open="true"] {
+    --panel-clearance: 16px;
+  }
+  :root[data-keyboard-open="true"] .mobile-nav,
+  :root[data-keyboard-open="true"] .memory-actions-trigger {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+@media (max-width: 1000px) and (pointer: coarse) {
+  .diary-shell .page :is(input, select, textarea),
+  .login-page :is(input, select, textarea) {
+    font-size: 16px;
+  }
+  .memory-diary-action .icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

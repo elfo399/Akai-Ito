@@ -267,6 +267,10 @@ Il deploy automatico sul Raspberry è configurato tramite Jenkins e verificato c
 
 Il repository include un `Jenkinsfile`, il target Docker `ci` e `scripts/jenkins-deploy.sh`. Il flusso previsto è GitHub → test/build → backup → deploy sul Raspberry → healthcheck, con tentativo di riavvio dell’immagine precedente in caso di errore. La configurazione del controller, dell’agent SSH e del webhook è descritta in [docs/JENKINS.md](docs/JENKINS.md) e va completata sull’installazione reale.
 
+## App mobile e PWA
+
+La configurazione standalone, le icone del logo, la gestione di viewport/safe area e la procedura per sostituire una vecchia icona Home sono documentate in [docs/PWA.md](docs/PWA.md). Non è prevista cache offline di fotografie o dati privati. Stato di pubblicazione e verifiche realmente eseguite in [HANDOFF.md](HANDOFF.md).
+
 ## Limiti della V1
 
 - Una coppia e due account; nessun recupero password via email, registrazione o gestione multi-coppia. Il cambio password richiede la password attuale.

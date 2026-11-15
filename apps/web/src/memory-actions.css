@@ -3,8 +3,8 @@
 }
 .memory-floating-tools {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  right: max(24px, var(--safe-right, 0px));
+  bottom: calc(var(--viewport-bottom, 0px) + var(--actions-bottom, 24px));
   z-index: 40;
 }
 .memory-actions-trigger {
@@ -27,10 +27,23 @@
 }
 .memory-actions-panel {
   position: fixed;
-  inset: auto 24px 84px auto;
+  inset: auto max(24px, var(--safe-right, 0px))
+    calc(var(--viewport-bottom, 0px) + var(--panel-clearance, 84px)) auto;
   margin: 0;
-  width: min(330px, calc(100vw - 32px));
-  max-height: calc(100dvh - 120px);
+  width: min(
+    var(--actions-panel-width, 330px),
+    calc(
+      100vw - max(16px, var(--safe-left, 0px)) -
+        max(16px, var(--safe-right, 0px))
+    )
+  );
+  max-height: max(
+    0px,
+    calc(
+      var(--visual-height, 100dvh) - var(--panel-clearance, 84px) -
+        max(16px, var(--safe-top, 0px))
+    )
+  );
   overflow: auto;
   overscroll-behavior: contain;
   padding: 14px;
@@ -182,15 +195,19 @@
 .memory-floating-tools .diary-navigation-error {
   margin: 8px 0;
 }
+@media (pointer: coarse) {
+  .memory-actions-close,
+  .memory-diary-action .icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
 @media (max-width: 1000px) {
   .memory-floating-tools {
-    right: 16px;
-    bottom: calc(86px + env(safe-area-inset-bottom));
+    right: max(16px, var(--safe-right, 0px));
   }
   .memory-actions-panel {
-    right: 16px;
-    bottom: calc(146px + env(safe-area-inset-bottom));
-    max-height: calc(100dvh - 180px - env(safe-area-inset-bottom));
+    right: max(16px, var(--safe-right, 0px));
   }
   .memory-actions-close {
     min-width: 44px;
