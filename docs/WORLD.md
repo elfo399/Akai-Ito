@@ -1,6 +1,6 @@
 # Il nostro mondo
 
-Funzione integrata nel diario esistente, sul branch `feat/our-world-map`, insieme al redesign Scrapbook. Sviluppo e verifiche eseguiti in locale; nessun merge su `main`, deploy in produzione o intervento su Jenkins.
+Funzione integrata nel diario esistente insieme al redesign Scrapbook. Stato aggiornato della consegna e delle revisioni locali in `HANDOFF.md`.
 
 ## Utilizzo
 
@@ -8,7 +8,9 @@ Aprire **http://localhost:3000/world**, oppure scegliere **Il nostro mondo** nel
 
 La pagina mostra le fotografie archiviate nel database, senza contenuti geografici dimostrativi incorporati nel codice. Le foto prive di coordinate rimangono nel diario senza un pin. Le vecchie foto della preview possono quindi lasciare inizialmente vuota la mappa: non vengono geolocalizzate dal titolo o dalla descrizione.
 
-Per assegnare un punto, aprire un ricordo, scegliere **Imposta posizione** sotto la fotografia, toccare la mappa oppure inserire latitudine e longitudine, quindi salvare. Entrambi gli utenti vedono la stessa posizione. Il dialogo permette correzione e rimozione e distingue posizioni EXIF, manuali e rimosse. Non cambia gli originali. Un punto rimosso manualmente non viene ripristinato dalle importazioni EXIF successive.
+Per assegnare un punto, aprire un ricordo e scegliere **Imposta posizione** dal menu **Azioni** (con più fotografie, aprire **Posizione delle foto** e scegliere lo scatto), toccare la mappa oppure inserire latitudine e longitudine, quindi salvare. Entrambi gli utenti vedono la stessa posizione. Il dialogo permette correzione e rimozione e distingue posizioni EXIF, manuali e rimosse. Non cambia gli originali. Un punto rimosso manualmente non viene ripristinato dalle importazioni EXIF successive.
+
+Anche la pagina mappa ha un pulsante flottante **Azioni**: raccoglie riproduzione e riavvio del viaggio, uscita, **Torna a oggi**, cursore temporale e data precisa. Segue lo scroll e resta sopra la navigazione mobile; durante il viaggio mostra la tappa corrente. Sotto la mappa rimangono data e conteggi. Zoom, centratura e controlli contestuali delle fotografie restano sulla mappa. Escape/clic esterno chiudono il pannello, e i filtri rimangono utilizzabili da tastiera senza perdere il focus. Stato di consegna e verifiche in `HANDOFF.md`.
 
 Il cursore rosso e il campo data filtrano inclusivamente: `dataScatto <= dataSelezionata`. Frecce, Home ed End funzionano da tastiera. **Torna a oggi** interrompe la riproduzione. Gli scatti con data futura restano nascosti fino al giorno corrispondente.
 

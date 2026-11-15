@@ -1,0 +1,72 @@
+.world-page {
+  padding-bottom: 110px;
+}
+.world-page .world-time {
+  padding-top: 20px;
+}
+.world-page .world-time .time-heading {
+  margin-bottom: 12px;
+}
+.world-page .world-time .world-counts {
+  margin-top: 0;
+}
+.world-actions-panel {
+  width: min(350px, calc(100vw - 32px));
+}
+.world-actions-panel .memory-actions-heading h2 {
+  font-size: 24px;
+  line-height: 1.15;
+}
+.world-action-dates {
+  margin-top: 8px;
+  padding: 17px 10px 4px;
+  border-top: 1px solid var(--line);
+}
+.world-action-dates > label:first-child {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+.world-action-dates > time {
+  display: block;
+  margin-top: 5px;
+  font:
+    26px "Cormorant Garamond",
+    serif;
+}
+.world-action-dates input.time-thread {
+  margin: 12px 0 0;
+  min-height: 32px;
+}
+.world-action-dates .time-endpoints {
+  font-size: 9px;
+}
+.world-action-dates .world-date-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.world-action-dates .world-date-input input {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 8px;
+  font-size: 16px;
+  background: #fffdf8;
+  color: var(--ink);
+}
+.world-actions-panel :is(input, button):focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+@media (max-width: 620px) {
+  .world-page .world-counts {
+    text-align: left;
+  }
+}
