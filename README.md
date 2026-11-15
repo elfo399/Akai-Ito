@@ -9,6 +9,7 @@ Un diario fotografico privato per due persone. Ricordi, fotografie e pensieri so
 ## Cosa comprende
 
 - Login, logout, sessioni persistenti revocabili e cambio password personale.
+- Blocco opzionale del diario con passkey, timeout personali e recupero con password; controllo anche sulle API e sulle fotografie. [Configurazione, preview e verifiche](docs/BIOMETRIC-LOCK.md).
 - Due account con uguali permessi sui ricordi, inizializzati da terminale.
 - Copertina con nomi, fotografia, data della relazione e giorni insieme.
 - Timeline per data **dell’evento**, ordine invertibile, filtri anno/categoria e paginazione.
@@ -184,13 +185,30 @@ Il comando verifica integrità SQLite, foreign keys ed esistenza di tutti i file
 
 Il database e i file devono essere acquisiti **nello stesso intervallo senza scritture**. Copiare soltanto `akai.sqlite` mentre il server è attivo non è una procedura valida: WAL e fotografie potrebbero non corrispondere.
 
+**Memory Vault** aggiunge snapshot cifrati/deduplicati Restic, controllo del mount esterno, lock condiviso con Jenkins, retention 7 giornalieri/4 settimanali/6 mensili, stato CLI e veri test di ripristino in un nuovo volume. Sono pronti i timer systemd delle 03:30 Europe/Rome e del drill settimanale; **non sono installati o attivi in produzione**. Configurare prima destinazione e password privata usando [docker/backup.env.example](docker/backup.env.example), poi seguire [installazione e disaster recovery](docs/BACKUP-RECOVERY.md).
+
+Sull'host Linux, dopo la configurazione privata:
+
+```sh
+export MEMORY_VAULT_CONFIG=/PERCORSO-PRIVATO/backup.env
+bash scripts/memory-vault.sh init
+bash scripts/memory-vault.sh backup manual
+bash scripts/memory-vault.sh list
+bash scripts/memory-vault.sh test-restore latest
+bash scripts/memory-vault.sh status
+```
+
+Gli alias `npm run backup`, `backup:list`, `backup:verify`, `backup:test-restore`, `backup:restore`, `backup:retention` e `backup:status` richiamano gli stessi script, se Node è disponibile sull'host. Non richiedono Node per l'uso shell. Backup e staging vanno su un supporto separato, fuori dalle directory sorgenti/pubbliche; una copia sulla stessa SD non protegge dal suo guasto. Conservare la password di cifratura separatamente: senza di essa i backup non sono recuperabili.
+
+Gli entry point tar.gz precedenti rimangono disponibili. Su un deploy gestito da Jenkins passare sempre `BACKUP_DEPLOY_DIR` uguale alla sua directory reale per condividere `.deploy.lock`; in standalone il default resta la directory corrente. Non è prevista retention automatica degli archivi storici.
+
 Su Raspberry/Linux, dalla radice del repository:
 
 ```sh
 sh scripts/backup.sh ./backups
 ```
 
-Lo script ferma l’app, archivia l’intera directory dati (inclusi eventuali WAL/SHM e media), scrive un checksum SHA-256 e riavvia il servizio con una trap anche in caso di errore. La directory host deve essere scrivibile dall’UID 1000; lo script non modifica i permessi del sistema. I backup contengono fotografie private, hash delle password e sessioni: conservarli su un supporto protetto e, se necessario, cifrato. Conservare separatamente `.env` e la revisione del codice usata per il backup.
+Lo script acquisisce il lock, ferma l’app, archivia l’intero volume (inclusi eventuali WAL/SHM e media), verifica SQLite/file e pubblica archivio e checksum SHA-256 solo dopo successo. Riavvia lo stesso container con una trap anche in caso di errore; un'app già ferma rimane ferma. L'archivio viene scritto dall'operatore host in una directory privata 700, senza imporre il suo UID uguale a quello del container. Occorrono Python 3 e gli strumenti GNU descritti nella documentazione. Questi tar.gz sono **in chiaro**: contengono fotografie private, hash delle password e sessioni e vanno conservati su un supporto protetto. Conservare separatamente `.env` e la versione dell'app usata per il backup.
 
 Per ripristinare **senza sovrascrivere il volume corrente**, usare un nuovo nome volume:
 

@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "./auth";
+import { savedDiaryScroll, clearDiaryScroll } from "./diary-scroll";
 import {
   particleLevel,
   seasonMode,
@@ -418,6 +419,7 @@ const positions = new Map<string, number>(),
   timelinePositions = new Map<string, number>();
 export function RouteViewport() {
   const location = useLocation();
+  const { phase } = useAuth();
   useEffect(() => {
     const old = history.scrollRestoration;
     history.scrollRestoration = "manual";
@@ -426,8 +428,11 @@ export function RouteViewport() {
     };
   }, []);
   useLayoutEffect(() => {
+    if (phase !== "unlocked") return;
     const url = location.pathname + location.search,
+      diaryTarget = savedDiaryScroll(url),
       target =
+        diaryTarget ??
         positions.get(location.key) ??
         (location.pathname === "/timeline" ? timelinePositions.get(url) : 0) ??
         0;
@@ -443,6 +448,7 @@ export function RouteViewport() {
       const main = document.getElementById("content");
       if (!main || main.querySelector('.status[role="status"]')) return;
       window.scrollTo({ top: target, behavior: "instant" });
+      if (diaryTarget !== null) clearDiaryScroll();
       // URL-backed filters can update the page while their popover stays open.
       // Keep keyboard focus on the field until the user leaves the panel.
       if (!document.activeElement?.closest("[popover]:popover-open"))
@@ -466,7 +472,7 @@ export function RouteViewport() {
       observer.disconnect();
       window.removeEventListener("scroll", track);
     };
-  }, [location.key]);
+  }, [location.key, phase]);
   return null;
 }
 export const photoTransition = (

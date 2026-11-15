@@ -13,6 +13,7 @@
     "@fontsource/cormorant-garamond": "^5.2.8",
     "@fontsource/dm-sans": "^5.2.8",
     "@hookform/resolvers": "^7.0.6",
+    "@simplewebauthn/browser": "14.0.0",
     "@tanstack/react-query": "^5.90.5",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",

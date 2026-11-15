@@ -44,6 +44,7 @@ export default function SeasonalParticles({
   preview = false,
   paused = false,
   framed = false,
+  foreground = false,
 }: {
   season: ParticleSeason;
   level: ParticleLevel;
@@ -51,6 +52,7 @@ export default function SeasonalParticles({
   preview?: boolean;
   paused?: boolean;
   framed?: boolean;
+  foreground?: boolean;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const { effective } = useMotion();
@@ -61,6 +63,7 @@ export default function SeasonalParticles({
     preview,
     paused,
     framed,
+    foreground,
     reduced: effective === "reduced",
   });
   useLayoutEffect(() => {
@@ -71,9 +74,10 @@ export default function SeasonalParticles({
       preview,
       paused,
       framed,
+      foreground,
       reduced: effective === "reduced",
     };
-  }, [season, level, quiet, preview, paused, framed, effective]);
+  }, [season, level, quiet, preview, paused, framed, foreground, effective]);
   useEffect(() => {
     const el = canvas.current!;
     const ctx = el.getContext("2d");
@@ -99,7 +103,7 @@ export default function SeasonalParticles({
     };
     const updateGeometry = () => {
       geometryDirty = false;
-      if (!options.current.framed) {
+      if (!options.current.framed || options.current.foreground) {
         protectedAreas = [];
         return;
       }
@@ -197,7 +201,13 @@ export default function SeasonalParticles({
             if (layer.season === "autumn")
               x += Math.sin(phase * 0.38) * 26 + (p.y - 0.5) * 65;
           }
-          if (opts.framed)
+          if (opts.foreground)
+            // Spread a few particles across the screen, including the middle,
+            // while retaining individual sway instead of forming rigid columns.
+            x =
+              ((i + 0.18 + p.x * 0.64) / layer.particles.length) * width +
+              Math.sin(phase) * config.sway * 0.6;
+          else if (opts.framed)
             x = framedParticleX(p.x, i, width, gutter, Math.sin(phase));
           ctx.save();
           ctx.translate(x, y);
@@ -270,9 +280,9 @@ export default function SeasonalParticles({
           ctx.restore();
         }
       }
-      // Clear protected content after drawing: overlapping masks remain a union,
-      // and even the edge of a leaf or glow can never cover the photograph.
-      if (opts.framed) {
+      // Desktop detail keeps its protected content. Mobile intentionally floats
+      // across photographs and text, with pointer events disabled on the layer.
+      if (opts.framed && !opts.foreground) {
         for (const rect of protectedAreas)
           ctx.clearRect(
             rect.left - 5,
@@ -369,6 +379,7 @@ export default function SeasonalParticles({
         "data-season",
         "data-level",
         "data-framed",
+        "data-foreground",
       ],
     });
     modal();
@@ -396,6 +407,7 @@ export default function SeasonalParticles({
       data-level={level}
       data-paused={paused}
       data-framed={framed}
+      data-foreground={foreground}
     />
   );
 }

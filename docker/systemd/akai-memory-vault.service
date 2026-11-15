@@ -1,0 +1,23 @@
+[Unit]
+Description=Akai Ito Memory Vault — consistent encrypted backup
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+# Operator: add RequiresMountsFor=/ACTUAL/MOUNT in a drop-in after configuring storage.
+
+[Service]
+Type=oneshot
+# MUST be the same Unix operator that owns Jenkins' .deploy.lock. Edit before install.
+User=CHANGE_ME
+WorkingDirectory=/opt/akai-ito
+Environment=MEMORY_VAULT_CONFIG=/etc/akai-ito/backup.env
+ExecStart=/bin/bash /opt/akai-ito/scripts/memory-vault.sh backup scheduled
+UMask=0077
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+TimeoutStartSec=6h
+TimeoutStopSec=240
+KillMode=mixed
+StandardOutput=journal
+StandardError=journal

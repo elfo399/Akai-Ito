@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import { useMotion } from "../motion";
 import { particlesEnabled } from "../seasonal";
@@ -5,6 +7,15 @@ import { useActiveSeason, type SeasonScope } from "../useActiveSeason";
 import SeasonalParticles from "./SeasonalParticles";
 
 export default function SeasonalAtmosphere() {
+  const [foreground, setForeground] = useState(
+    () => matchMedia("(max-width: 1000px)").matches,
+  );
+  useEffect(() => {
+    const media = matchMedia("(max-width: 1000px)");
+    const update = () => setForeground(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const location = useLocation(),
     motion = useMotion();
   const path = location.pathname;
@@ -33,6 +44,23 @@ export default function SeasonalAtmosphere() {
     atmosphereEnabled,
   );
   if (!atmosphereEnabled) return null;
+  const particles = enabled ? (
+    <div
+      className="seasonal-atmosphere"
+      aria-hidden="true"
+      data-active-season={season}
+      data-particle-scope={scope}
+      data-particle-layer={foreground ? "foreground" : "background"}
+    >
+      <SeasonalParticles
+        season={season}
+        level={motion.particles}
+        quiet={scope === "current" || scope === "album"}
+        framed={scope === "detail"}
+        foreground={foreground}
+      />
+    </div>
+  ) : null;
   return (
     <>
       <div
@@ -40,21 +68,7 @@ export default function SeasonalAtmosphere() {
         aria-hidden="true"
         data-active-season={season}
       />
-      {enabled && (
-        <div
-          className="seasonal-atmosphere"
-          aria-hidden="true"
-          data-active-season={season}
-          data-particle-scope={scope}
-        >
-          <SeasonalParticles
-            season={season}
-            level={motion.particles}
-            quiet={scope === "current" || scope === "album"}
-            framed={scope === "detail"}
-          />
-        </div>
-      )}
+      {foreground ? createPortal(particles, document.body) : particles}
     </>
   );
 }

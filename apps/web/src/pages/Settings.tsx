@@ -23,6 +23,7 @@ import {
   Dialog,
 } from "../components";
 import { Pagination } from "./Timeline";
+import DiaryProtection from "../components/DiaryProtection";
 import { MotionSettings } from "../motion";
 import SeasonalParticleSettings from "../components/SeasonalParticleSettings";
 import "../settings.css";
@@ -392,6 +393,7 @@ function SettingsForms({ initial }: { initial: Settings }) {
                   Cambia password
                 </button>
               </form>
+              <DiaryProtection />
             </div>
           </section>
           <section

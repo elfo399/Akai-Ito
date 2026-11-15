@@ -9,10 +9,15 @@ export class ApiError extends Error {
   }
 }
 let csrf = "";
+let privateEpoch = 0;
+export const invalidatePrivateResponses = () => {
+  privateEpoch++;
+};
 export const setCsrf = (value: string) => {
   csrf = value;
 };
 export async function api<T>(url: string, init: RequestInit = {}): Promise<T> {
+  const epoch = privateEpoch;
   const headers = new Headers(init.headers);
   if (init.body && !(init.body instanceof FormData))
     headers.set("Content-Type", "application/json");
@@ -26,11 +31,21 @@ export async function api<T>(url: string, init: RequestInit = {}): Promise<T> {
     const error = await res
       .json()
       .catch(() => ({ message: "Il server non è raggiungibile." }));
-    if (res.status === 401 && !url.startsWith("/auth/"))
+    if (
+      res.status === 401 &&
+      !["/auth/login", "/auth/me"].includes(url.split("?")[0])
+    )
       window.dispatchEvent(new Event("session-expired"));
+    if (res.status === 423) window.dispatchEvent(new Event("diary-locked"));
     throw new ApiError(res.status, error.message ?? "Operazione non riuscita.");
   }
-  return res.json();
+  const data = await res.json();
+  if (!url.startsWith("/auth/") && epoch !== privateEpoch)
+    throw new ApiError(
+      423,
+      "Verifica lo stato del diario prima di continuare.",
+    );
+  return data;
 }
 export const photoUrl = (
   id: string,
