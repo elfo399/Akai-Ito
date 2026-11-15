@@ -13,6 +13,8 @@ La navigazione è **Album → capitolo (es. Viaggi) → album con nome (es. Barc
 
 Le categorie esistenti restano capitoli. I vecchi ricordi non vengono attribuiti automaticamente a viaggi immaginati dal titolo o dal GPS: finché non sono assegnati, restano in **Ricordi da organizzare**. Il sistema supporta lo stesso livello di album con nome anche negli altri capitoli.
 
+**Sfoglia il diario è disponibile solo per i ricordi assegnati a un album.** Nei ricordi da organizzare non compare il comando e i vecchi link con `browse=1` tornano al dettaglio normale, senza creare una sequenza globale. Durante lo sfogliamento, se una pagina è stata spostata in un altro album o eliminata, si rimane sul ricordo corrente e la sequenza viene aggiornata. I caricamenti falliti permettono di riprovare; comandi ripetuti e uscita durante una richiesta non producono salti di pagina. Contesto di consegna e verifiche aggiornati in `HANDOFF.md`.
+
 ## Persistenza e API
 
 Migrazione additiva `0003_collections.sql`: tabella `collections` e campo nullable `memories.collection_id`, con foreign key `ON DELETE SET NULL` e indici per categoria/album. Non vengono ricreati o cancellati ricordi, media o commenti. La migrazione è idempotente attraverso il registro `_migrations` ed è eseguita dal normale avvio Compose. Finora è applicata solo al database della preview locale.

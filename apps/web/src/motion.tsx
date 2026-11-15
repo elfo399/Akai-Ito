@@ -109,20 +109,48 @@ export function MotionSettings() {
       className="paper form-paper experience-settings"
       aria-labelledby="experience-settings-title"
     >
-      <span className="eyebrow">COME TI VA DI SFOGLIARE?</span>
+      <span className="eyebrow">ASPETTO E MOVIMENTO</span>
       <h2 id="experience-settings-title">Il ritmo del diario</h2>
-      <p>Queste preferenze restano su questo dispositivo.</p>
-      <label>
-        Intensità degli effetti
-        <select
-          value={motion.preference}
-          onChange={(e) => motion.setPreference(e.target.value as Intensity)}
-        >
-          <option value="full">Completi</option>
-          <option value="reduced">Ridotti</option>
-          <option value="off">Disattivati</option>
-        </select>
-      </label>
+      <p>
+        Scegli come accompagnare i tuoi ricordi. Le preferenze si salvano
+        automaticamente su questo dispositivo.
+      </p>
+      <fieldset className="settings-motion-options">
+        <legend>Intensità degli effetti</legend>
+        {(
+          [
+            [
+              "full",
+              "Completi",
+              "Transizioni, sviluppo delle foto e piccoli movimenti.",
+            ],
+            [
+              "reduced",
+              "Ridotti",
+              "Passaggi discreti, senza zoom e movimenti automatici.",
+            ],
+            [
+              "off",
+              "Disattivati",
+              "Sfoglia con calma, senza animazioni decorative.",
+            ],
+          ] as const
+        ).map(([value, label, description]) => (
+          <label key={value} className="settings-motion-option">
+            <input
+              type="radio"
+              name="motion-intensity"
+              value={value}
+              checked={motion.preference === value}
+              onChange={() => motion.setPreference(value)}
+            />
+            <span>
+              <strong>{label}</strong>
+              <small>{description}</small>
+            </span>
+          </label>
+        ))}
+      </fieldset>
       {motion.systemReduced && (
         <p className="tiny" role="status">
           Il sistema richiede movimento ridotto: zoom automatici, parallasse e
@@ -135,8 +163,16 @@ export function MotionSettings() {
           checked={motion.seasons}
           onChange={(e) => motion.setSeasons(e.target.checked)}
         />
-        Atmosfera stagionale dei ricordi
+        <span>
+          <strong>Atmosfera stagionale dei ricordi</strong>
+          <small>
+            I colori del diario seguono la stagione di ogni ricordo.
+          </small>
+        </span>
       </label>
+      <p className="settings-preference-note">
+        Il movimento ridotto del sistema viene sempre rispettato.
+      </p>
     </section>
   );
 }
