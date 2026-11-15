@@ -29,6 +29,7 @@ import { useMobileViewport } from "./mobile-viewport";
 import { MotionProvider, RouteViewport } from "./motion";
 import Detail from "./pages/Detail";
 import Timeline from "./pages/Timeline";
+import DiaryGate from "./components/DiaryGate";
 const Login = lazy(() => import("./pages/Login"));
 const Home = lazy(() => import("./pages/Home"));
 const Editor = lazy(() => import("./pages/Editor"));
@@ -43,9 +44,9 @@ const client = new QueryClient({
 });
 function App() {
   useMobileViewport();
-  const { user, loading, error, refresh } = useAuth();
+  const { user, phase, error, refresh } = useAuth();
   const location = useLocation();
-  if (loading) return <Loading />;
+  if (phase === "checking" || phase === "locked") return <DiaryGate />;
   if (error)
     return <ErrorState error={new Error(error)} retry={() => void refresh()} />;
   if (!user)

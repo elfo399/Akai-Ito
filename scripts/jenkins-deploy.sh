@@ -2,6 +2,10 @@
 # Run by the trusted Jenkins agent on the Raspberry. Never removes volumes.
 set -eu
 umask 077
+script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+# shellcheck source=backup-common.sh
+. "$script_dir/backup-common.sh"
+backup_dependencies
 
 image="${1:?Uso: sh scripts/jenkins-deploy.sh immagine directory-deploy}"
 deploy_dir="${2:?Indica una directory di deploy già configurata}"
@@ -16,8 +20,7 @@ case "$project" in ''|*[!a-z0-9_-]*) printf 'Nome progetto Compose non valido\n'
 command -v flock >/dev/null
 docker image inspect "$image" >/dev/null
 deploy_dir=$(cd "$deploy_dir" && pwd -P)
-exec 9>"$deploy_dir/.deploy.lock"
-flock -n 9 || { printf 'Un altro deploy è in corso\n' >&2; exit 1; }
+backup_lock "$deploy_dir"
 
 compose() {
     if [ -f "$deploy_dir/compose.proxy.yml" ]; then
@@ -71,10 +74,9 @@ if [ -n "$old_image" ]; then
     # No writers while DB, WAL and photographs are archived together.
     # Stream to a file owned by the Jenkins user, avoiding host UID assumptions
     # and preventing private archive bytes from entering Docker/Jenkins logs.
-    docker run --rm --read-only --network none --log-driver none --cap-drop ALL --security-opt no-new-privileges:true \
-        --user 1000:1000 --mount "type=volume,source=$actual_volume,target=/data,readonly" \
-        "$old_image" tar -czf - -C /data . > "$deploy_dir/backups/$backup_file"
-    (cd "$deploy_dir/backups" && sha256sum "$backup_file" > "$backup_file.sha256")
+    backup_file="before-deploy-$stamp-$(cat /proc/sys/kernel/random/uuid).tar.gz"
+    backup_archive "$old_image" "$actual_volume" "$deploy_dir/backups/$backup_file" \
+        "akai-predeploy-$(cat /proc/sys/kernel/random/uuid)" "$script_dir/vault-files.py"
 fi
 
 APP_IMAGE="$image" compose up -d --no-build --pull never --wait --wait-timeout 180 app

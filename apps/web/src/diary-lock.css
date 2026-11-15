@@ -1,0 +1,183 @@
+.privacy-curtain {
+  display: none;
+}
+html[data-diary-shield="true"] .privacy-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  background: #f8f1e7;
+  color: #76584d;
+  padding: 24px;
+  text-align: center;
+}
+.privacy-curtain span {
+  font: 32px var(--serif);
+  color: var(--red);
+}
+.privacy-curtain p {
+  font: 24px var(--hand);
+}
+html[data-diary-shield="true"]
+  :is(
+    .diary-shell,
+    .seasonal-atmosphere,
+    .memory-floating-tools,
+    dialog[open],
+    [popover]:popover-open
+  ) {
+  visibility: hidden !important;
+}
+html[data-diary-protected="true"]::view-transition {
+  display: none;
+}
+.diary-gate {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: max(24px, var(--safe-top)) max(22px, var(--safe-right))
+    max(24px, var(--safe-bottom)) max(22px, var(--safe-left));
+}
+.diary-gate-card {
+  width: min(470px, 100%);
+  padding: 35px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  border-radius: 10px;
+}
+.diary-gate-card > .thread-mark {
+  width: 82px;
+}
+.diary-gate-card .eyebrow {
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+.diary-gate-card > .handwritten {
+  font-size: 25px;
+  color: var(--muted);
+}
+.diary-gate-card h1 {
+  font: 36px/1.1 var(--serif);
+}
+.diary-gate-card > p {
+  font-size: 13px;
+}
+.diary-gate-card > .handwritten {
+  font-size: 25px;
+}
+.diary-gate-card > svg:not(.thread-mark) {
+  color: var(--red);
+}
+.diary-gate-card .button {
+  min-height: 44px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+}
+.diary-gate-card form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+.diary-gate-card label {
+  width: 100%;
+  font-size: 12px;
+}
+.diary-gate-card input {
+  font-size: 16px;
+}
+.gate-logout {
+  margin-top: 5px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.diary-protection {
+  grid-column: 1/-1;
+}
+.diary-protection .dialog[open] {
+  width: min(480px, calc(100vw - 32px));
+}
+.diary-protection .dialog .button {
+  min-height: 44px;
+}
+.diary-protection > .eyebrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.protection-timeout {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 25px 0;
+}
+.protection-timeout label {
+  margin: 0;
+  flex: 1;
+  min-width: 180px;
+}
+.protection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+.diary-protection h3 {
+  margin: 25px 0 12px;
+  font: 25px var(--serif);
+}
+.passkey-list {
+  padding: 0;
+  list-style: none;
+}
+.passkey-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+.passkey-list strong {
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.passkey-list small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 5px;
+}
+.settings-page .diary-protection :is(.button, .icon-button) {
+  min-height: 44px;
+}
+.settings-page .diary-protection .icon-button {
+  min-width: 44px;
+}
+@media (max-width: 620px) {
+  .diary-gate-card {
+    padding: 28px 22px;
+  }
+  .diary-gate-card h1 {
+    font-size: 32px;
+  }
+  .protection-timeout {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

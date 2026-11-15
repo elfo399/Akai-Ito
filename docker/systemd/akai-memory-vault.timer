@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Akai Ito backup (Europe/Rome)
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Europe/Rome
+Persistent=true
+AccuracySec=1min
+Unit=akai-memory-vault.service
+
+[Install]
+WantedBy=timers.target

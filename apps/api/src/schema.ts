@@ -11,6 +11,10 @@ export const users = sqliteTable("users", {
   name: text("name").notNull(),
   password: text("password").notNull(),
   avatar: text("avatar"),
+  lockEnabled: integer("lock_enabled", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  lockTimeout: integer("lock_timeout").notNull().default(300),
 });
 export const sessions = sqliteTable("session", {
   id: text("id").primaryKey(),
@@ -19,6 +23,10 @@ export const sessions = sqliteTable("session", {
     .references(() => users.id, { onDelete: "cascade" }),
   csrf: text("csrf").notNull(),
   expires: integer("expires").notNull(),
+  lastActivity: integer("last_activity").notNull().default(0),
+  backgroundAt: integer("background_at"),
+  lockedAt: integer("locked_at"),
+  verifiedAt: integer("verified_at").notNull().default(0),
 });
 export const settings = sqliteTable("couple_settings", {
   id: integer("id").primaryKey(),

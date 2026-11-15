@@ -455,7 +455,7 @@ describe("Importazione esplicita e compatibilità", () => {
       ).toEqual({ version: 7 });
       expect(
         sqlite.prepare("SELECT count(*) AS n FROM _migrations").get(),
-      ).toEqual({ n: 3 });
+      ).toEqual({ n: 4 });
     } finally {
       sqlite.close();
       await rm(legacy, { recursive: true, force: true });

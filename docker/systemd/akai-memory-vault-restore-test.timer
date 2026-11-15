@@ -1,0 +1,10 @@
+[Unit]
+Description=Optional weekly isolated recovery drill
+
+[Timer]
+OnCalendar=Sun *-*-* 05:00:00 Europe/Rome
+Persistent=true
+Unit=akai-memory-vault-restore-test.service
+
+[Install]
+WantedBy=timers.target

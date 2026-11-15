@@ -58,6 +58,9 @@
 .seasonal-atmosphere[data-particle-scope="detail"] {
   z-index: 3;
 }
+.seasonal-atmosphere[data-particle-layer="foreground"] {
+  z-index: 50;
+}
 .particle-settings {
   margin-top: 22px;
 }

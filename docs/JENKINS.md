@@ -17,7 +17,7 @@ Il volume non viene eliminato. `.env` resta sul Raspberry, fuori dal workspace J
 ## Configurazione sul server
 
 - Jenkins controller con accesso autenticato; build eseguite su un agent dedicato, non sul controller.
-- Agent Linux ARM64 sul Raspberry con etichette `raspberry-pi` e `docker`, Git, Java richiesto dalla versione Jenkins, Docker e Compose v2. Viene riutilizzato l’agent `orio-raspberry-pi`; la chiave SSH e la verifica della host key rimangono quelle già configurate.
+- Agent Linux ARM64 sul Raspberry con etichette `raspberry-pi` e `docker`, Git, Java richiesto dalla versione Jenkins, Docker e Compose v2. Il backup pre-deploy consolidato richiede anche Python 3 con SQLite e gli strumenti GNU tar/gzip/coreutils/util-linux. Verificarli prima del futuro rilascio del Memory Vault. Viene riutilizzato l’agent `orio-raspberry-pi`; la chiave SSH e la verifica della host key rimangono quelle già configurate.
 - Directory `/home/elfo/services/akai-ito`, scrivibile dall’utente dell’agent, con `.env` privato di produzione. Il file `compose.proxy.yml` collega il servizio a `proxy-net` con alias `akai-ito`; Nginx Proxy Manager inoltra a `http://akai-ito:3000`.
 - Progetto Compose stabile `akai-ito`. Se l’app esistente usa un nome diverso o un volume esterno/bind mount, adattare la configurazione dopo averla ispezionata. Lo script rifiuta un volume inatteso per evitare di avviare un diario vuoto al posto di quello esistente.
 - Job **Pipeline from SCM** `Akai-Ito` per `https://github.com/elfo399/Akai-Ito.git`, branch `*/main`, percorso `Jenkinsfile`, checkout leggero. Il trigger è `githubPush()`. Non abilitare build di pull request o fork non fidati sull’agent che può gestire il Docker di produzione.
@@ -62,7 +62,15 @@ L’HTTP interno è pubblicato soltanto su `127.0.0.1:13000`; l’app usa HTTPS 
 - I deploy dello stesso job vengono accodati, senza interrompere una migrazione o un backup in corso; un lock sul Raspberry protegge anche da esecuzioni sovrapposte di job diversi.
 - Il backup causa una breve indisponibilità e richiede spazio libero. Il container legge il volume come UID 1000, mentre il file viene salvato dall’utente Jenkins con permessi privati; il contenuto non viene scritto nei log.
 - Il rollback automatico riguarda l’immagine. Non ripristina il database all’indietro: mantenere le migrazioni compatibili e additive; per migrazioni incompatibili serve una procedura esplicita con backup/ripristino.
-- Le immagini di release e i backup non vengono cancellati automaticamente. La retention va concordata in base allo spazio del Raspberry.
+- Le immagini di release e i tar.gz storici pre-deploy non vengono cancellati automaticamente. Memory Vault ha una retention separata esclusivamente per i propri snapshot Restic verificati, da configurare in base allo spazio disponibile.
 - I file Jenkins, script di deploy e sorgenti dell’app devono essere presenti su GitHub perché il job possa prelevarli. Le modifiche locali ancora non committate non sono visibili a Jenkins.
 
 Riferimenti: [Pipeline as Code](https://www.jenkins.io/doc/book/pipeline/pipeline-as-code/), [sintassi delle pipeline](https://www.jenkins.io/doc/book/pipeline/syntax/), [isolamento del controller](https://www.jenkins.io/doc/book/security/controller-isolation/).
+
+## Memory Vault e lock condiviso
+
+Il backup programmato/manuale Vault e gli archivi pre-deploy utilizzano `scripts/backup-common.sh` e lo stesso inode **`DEPLOY_DIR/.deploy.lock`**, con `flock` non bloccante. Un conflitto esce con 75: nessun secondo processo ferma o riavvia l'app e non si acquisiscono lock annidati. Usare la **medesima directory di deploy e il medesimo utente Unix** per Jenkins e i service systemd; non creare il file 600 come un altro utente. Anche gli entry point legacy accettano `BACKUP_DEPLOY_DIR` per questa associazione.
+
+Jenkins continua a salvare un tar.gz completo prima di ogni aggiornamento; la copia e la verifica offline SQLite/media sono condivise col backup manuale, gli archivi hanno checksum e nomi UTC/UUID senza sovrascritture. Non deve inizializzare Restic, eseguire retention o eliminare vecchie immagini. Il Vault giornaliero cifra e deduplica su una destinazione separata, con una propria configurazione privata e timer **da installare manualmente**. Questi script e la documentazione sono preparati localmente: nessun job o scheduler di produzione viene avviato da questo intervento.
+
+Leggere [BACKUP-RECOVERY.md](BACKUP-RECOVERY.md) prima di configurare il disco/NAS, la password Restic o il recupero dopo guasto della SD.

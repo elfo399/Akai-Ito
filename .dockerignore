@@ -8,3 +8,7 @@ data
 backups
 coverage
 *.log
+**/.memory-vault
+**/__pycache__
+**/backup.env
+**/restic-password

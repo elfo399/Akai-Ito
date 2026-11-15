@@ -30,6 +30,7 @@ import { extractPhotoMetadata } from "./photo-metadata.js";
 import { mapConfig } from "./map-config.js";
 import { openDb } from "./db.js";
 import { registerCollections } from "./collections.js";
+import { DiaryLock, lockExceptions, registerDiaryLock } from "./diary-lock.js";
 import {
   users,
   sessions,
@@ -65,6 +66,7 @@ export type AppOptions = {
   webDir?: string;
   trustProxy?: boolean;
   loginLimit?: number;
+  clock?: () => number;
 };
 
 export async function createApp(options: AppOptions) {
@@ -91,6 +93,7 @@ export async function createApp(options: AppOptions) {
     }
   }
   const { db, sqlite } = openDb(options.dataDir);
+  const diaryLock = new DiaryLock(sqlite, options.origin, options.clock);
   if (
     !sqlite
       .prepare(
@@ -159,6 +162,7 @@ export async function createApp(options: AppOptions) {
     (error: Error & { statusCode?: number }, _request, reply) => {
       const code = error instanceof ZodError ? 400 : (error.statusCode ?? 500);
       reply.code(code).send({
+        ...(code === 423 ? { code: "DIARY_LOCKED" } : {}),
         message:
           error instanceof ZodError
             ? "Controlla i campi inseriti."
@@ -198,7 +202,7 @@ export async function createApp(options: AppOptions) {
       .where(
         and(
           eq(sessions.id, hash(token)),
-          sql`${sessions.expires} > ${Date.now()}`,
+          sql`${sessions.expires} > ${diaryLock.now()}`,
         ),
       )
       .get();
@@ -213,7 +217,9 @@ export async function createApp(options: AppOptions) {
       )
         fail(403, "Token di sicurezza non valido. Ricarica la pagina.");
     }
+    if (!lockExceptions.has(route)) diaryLock.unlocked(session.sessionId);
   });
+  registerDiaryLock(app, diaryLock);
   const identity = (r: FastifyRequest) => r.identity!;
   const idParam = (r: FastifyRequest) =>
     z.object({ id: z.string().uuid() }).parse(r.params).id;
@@ -450,7 +456,7 @@ export async function createApp(options: AppOptions) {
             .hash(input.password, { type: argon2.argon2id })
             .then(() => false);
       if (!valid || !user) fail(401, "Nome utente o password non corretti.");
-      db.delete(sessions).where(lt(sessions.expires, Date.now())).run();
+      db.delete(sessions).where(lt(sessions.expires, diaryLock.now())).run();
       const token = randomBytes(32).toString("hex"),
         csrf = randomBytes(32).toString("hex");
       db.insert(sessions)
@@ -458,7 +464,9 @@ export async function createApp(options: AppOptions) {
           id: hash(token),
           csrf,
           userId: user.id,
-          expires: Date.now() + 30 * 86400000,
+          expires: diaryLock.now() + 30 * 86400000,
+          lastActivity: diaryLock.now(),
+          verifiedAt: diaryLock.now(),
         })
         .run();
       reply.setCookie("akai_session", token, {
@@ -476,12 +484,14 @@ export async function createApp(options: AppOptions) {
           avatar: user.avatar,
         },
         csrf,
+        lock: diaryLock.state(hash(token)),
       };
     },
   );
   app.get("/api/auth/me", async (req) => {
     const { sessionId: _s, csrf, ...user } = identity(req);
-    return { user, csrf };
+    const lock = diaryLock.state(identity(req).sessionId);
+    return { user: lock.locked ? { ...user, avatar: null } : user, csrf, lock };
   });
   app.post("/api/auth/logout", async (req, reply) => {
     db.delete(sessions)

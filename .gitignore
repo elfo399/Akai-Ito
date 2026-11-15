@@ -6,3 +6,7 @@ data/
 coverage/
 *.log
 backups/
+.memory-vault/
+__pycache__/
+backup.env
+restic-password
