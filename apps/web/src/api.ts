@@ -1,3 +1,5 @@
+import { civilDate } from "@akai/shared";
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -35,12 +37,14 @@ export const photoUrl = (
   size: "thumb" | "display" | "original" = "thumb",
 ) => `/api/media/${id}/${size}`;
 export const formatDate = (date: string) =>
-  new Intl.DateTimeFormat("it-IT", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Europe/Rome",
-  }).format(new Date(date + "T12:00:00Z"));
+  !civilDate.safeParse(date).success
+    ? "Data non disponibile"
+    : new Intl.DateTimeFormat("it-IT", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "Europe/Rome",
+      }).format(new Date(date + "T12:00:00Z"));
 export const formatTime = (date: string) =>
   new Intl.DateTimeFormat("it-IT", {
     dateStyle: "medium",

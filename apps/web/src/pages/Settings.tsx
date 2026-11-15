@@ -24,6 +24,7 @@ import {
 } from "../components";
 import { Pagination } from "./Timeline";
 import { MotionSettings } from "../motion";
+import SeasonalParticleSettings from "../components/SeasonalParticleSettings";
 import "../settings.css";
 const sections = [
   {
@@ -401,6 +402,7 @@ function SettingsForms({ initial }: { initial: Settings }) {
             tabIndex={0}
           >
             <MotionSettings />
+            <SeasonalParticleSettings />
           </section>
         </div>
       </div>

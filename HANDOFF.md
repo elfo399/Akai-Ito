@@ -2,6 +2,22 @@
 
 Aggiornato il **15 novembre 2026**. Questo documento permette di riprendere il lavoro senza la chat precedente.
 
+## Consegna attuale — le quattro stagioni
+
+Il 15 novembre 2026, dopo la prova in Docker, l'utente ha chiesto **push e merge su main** della versione finale delle particelle stagionali, compresa l'estate con farfalle corallo/terracotta. Questa richiesta sostituisce il precedente vincolo di sola preview locale. Branch di consegna `feat/seasonal-particles`, basato su `main` `87175e2`; verificare SHA finale, merge e pipeline con Git e Jenkins. La consegna precedente di diario e Impostazioni è completata con `87175e2`, Jenkins #6 SUCCESS.
+
+Versione finale: **petali sakura, farfalle estive, foglie autunnali e neve**. Primavera, autunno e inverno sono approvati e non vanno riprogettati. L'estate è stata cambiata dopo il feedback sul giallo poco visibile: niente lucciole o pulviscolo; farfalle illustrate `#b96959`, `#c88067`, `#a95b58`, apertura lenta delle ali, volo lieve verso l'alto, fondo pesca. Pochi elementi (4/6 mobile, 8/13 desktop, Delicate/Immersive); anteprima «Un battito d’estate».
+
+Il sistema estende MotionProvider con storage locale sincronizzato tra schede (`akai-particles`, `akai-particle-season`). In **Impostazioni → Aspetto → Un soffio tra le pagine**: Disattivate/Delicate/Immersive, Automatico/Stagione attuale, anteprima delle quattro stagioni e pausa/ripresa. Default Delicate/Automatico. Atmosfera spenta ed effetti generali spenti disattivano le particelle; `prefers-reduced-motion` blocca sempre l'animazione. Colori stagionali statici conservati quando si spengono solo le particelle o il sistema riduce il movimento.
+
+Home segue la data attuale; timeline e dettaglio seguono il ricordo visibile/data civile, con stabilizzazione e crossfade di 1,5 s. Sfondo esterno e carta del dettaglio usano la stessa stagione delle particelle; inverno azzurro-grigio e neve con contorno visibile. Nel dettaglio le particelle passano lungo due margini, con foto, testo, controlli e commenti esclusi dal disegno. Mappa, editor, cestino e login esclusi. Rendering sospeso con cinema/dialoghi, scheda o anteprima nascosta. Filo originale e album per viaggio conservati.
+
+Un Canvas 2D, un solo RAF limitato a circa 30 fps, massimo due strati, DPR massimo 1,5 e risoluzione massima 2,4 milioni di pixel. Nessuna dipendenza, API, migrazione o modifica backend aggiunta. `api.ts` rende innocue le date civili non valide mostrando «Data non disponibile». Documentazione e parametri in **docs/SEASONAL-PARTICLES.md**.
+
+Verifiche finali locali: typecheck, lint, **92 test automatici in 6 file** (15 nuovi rispetto ai 77 della consegna precedente), build Docker e preview healthy su **http://localhost:3000**. Collaudi Chromium conclusi in più passaggi: 54 controlli iniziali, 18 su ciclo di vita/sincronizzazione, 25 sulla visibilità nel dettaglio, 16 su colori coerenti e 18 sull'ultima estate con farfalle. Verificati 375/430/768/1100/1440 px, date non valide e stagioni simulate tramite sole risposte GET, foto senza pixel sovrapposti, cinema, preferenze e movimento ridotto. Nessuna modifica ai contenuti demo. I collaudi dei tentativi estivi abbandonati non descrivono la resa finale.
+
+Artefatti ignorati sotto `.tools/`: `seasonal-qa/`, `detail-particles-qa/`, `season-background-qa/`, **summer-butterflies-qa/** e relativi script/log. Disponibili screenshot, sequenze di fotogrammi e un video del primo collaudo. Nessuna verifica su telefoni fisici, Safari/Firefox o benchmark Raspberry viene dichiarata. Dati Docker separati dal codice; nessun volume eliminato e nessun dato demo pubblicato tramite Git.
+
 ## Consegna autorizzata: diario e Impostazioni
 
 Il 15 novembre 2026 l'utente ha chiesto **push di tutto e merge su main**, includendo la correzione dello sfogliamento, la riorganizzazione delle Impostazioni, i test e questo handoff. La consegna parte da `fix/album-diary-navigation`; usare `git log` e lo stato reale di Jenkins per verificare SHA finale, merge e deploy. I controlli locali sono conclusi: 77 test, typecheck, lint, build Docker, 23 controlli browser sul diario e 37 sulle Impostazioni. Dati e account Docker restano separati dal codice e non vengono pubblicati tramite Git.
@@ -43,13 +59,13 @@ Dopo il push del commit `3a89e9e`, l'utente ha chiesto uno stile diverso e poi h
 
 Il progetto è un diario fotografico privato per due persone, con stile Scrapbook: carta crema, Polaroid, nastri adesivi, annotazioni e filo rosso. L'utente comunica in italiano e vuole vedere cambiamenti funzionanti, verificati nel browser e in Docker locale.
 
-**Stato del prodotto:** la revisione immersiva, gli album per singolo viaggio e le successive rifiniture sono implementati e pubblicati. Il bug dello sfogliamento e la riorganizzazione delle Impostazioni descritti sopra sono implementati e verificati, con push e merge autorizzati dall'utente. Non è richiesta una nuova riprogettazione.
+**Stato del prodotto:** revisione immersiva, album per singolo viaggio, rifiniture, correzione dello sfogliamento e Impostazioni sono pubblicati. Le particelle stagionali sono implementate e verificate; la pubblicazione della versione finale con farfalle estive è autorizzata.
 
 **Consegne Git completate:** prima `feat/immersive-experience` su `main` (`03f1d3b`, Jenkins #4 SUCCESS), poi le rifiniture da `fix/compact-memory-metadata` (`712819c`, Jenkins #5 SUCCESS). La pipeline può avviare il deploy sul Raspberry e va verificata sullo SHA corretto; per richieste successive seguire le nuove istruzioni dell'utente.
 
 Repository: `https://github.com/elfo399/Akai-Ito.git`.
 Base da cui è iniziata questa revisione: `bd06b301250eee8f4a86eb0fa915ba226ca991aa` (`feat: add scrapbook redesign and interactive photo world`).
-Branch della consegna attuale: `fix/album-diary-navigation`, da unire su `main`; `feat/immersive-experience` conserva la revisione iniziale. Verificare sempre `git status` e `git log` prima di riprendere.
+Branch della consegna corrente: `feat/seasonal-particles`, da unire a `main`; `fix/album-diary-navigation` è già unito a `main` con `87175e2`. `feat/immersive-experience` conserva la revisione iniziale. Verificare sempre `git status` e `git log` prima di riprendere.
 
 ## Riprendere su un altro PC
 
@@ -152,7 +168,7 @@ I vecchi endpoint `/api/albums` e `/api/albums/:category` restano compatibili. N
 
 La prima versione aveva animazioni troppo impercettibili e troppi titoli/pulsanti prima della foto. Sono stati corretti questi aspetti e l'organizzazione degli album. L'utente ha già approvato, per ora, cinema fotografico, viaggio sulla mappa, filo geografico, collegamento al luogo, intro, profondità e preferenze. L'ultima revisione è accettata: attendere la prossima richiesta concreta, senza inventare un redesign ulteriore o una backlog inesistente.
 
-L'effetto desiderato rimane un diario intimo, elegante e artigianale. Niente particelle continue, rotazioni eccessive, dashboard tecnologica o musica automatica.
+L'effetto desiderato rimane un diario intimo, elegante e artigianale. Le particelle stagionali sono state richieste esplicitamente: mantenerle delicate e facoltative. Niente rotazioni eccessive, dashboard tecnologica o musica automatica.
 
 ## Mappa dei file
 

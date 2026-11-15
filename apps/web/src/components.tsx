@@ -20,6 +20,7 @@ import { useAuth } from "./auth";
 import { formatDate, photoUrl } from "./api";
 import type { MemoryCardData } from "./types";
 import { ThreadMark, WashiTape } from "./scrapbook";
+import SeasonalAtmosphere from "./components/SeasonalAtmosphere";
 import {
   Intro,
   SeasonAccent,
@@ -72,6 +73,7 @@ export function Layout({ children }: { children: ReactNode }) {
         (to === "/settings" && pathname === "/trash");
   return (
     <>
+      <SeasonalAtmosphere />
       <Intro />
       <a className="skip" href="#content">
         Vai al contenuto
@@ -248,6 +250,8 @@ export function MemoryCard({ memory }: { memory: MemoryCardData }) {
       photoId={memory.coverId}
       className="memory-card polaroid"
       data-season={season}
+      data-particle-date={memory.eventDate}
+      data-particle-id={memory.id}
     >
       <WashiTape rose />
       <div className="photo-frame">
