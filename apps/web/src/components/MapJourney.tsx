@@ -33,9 +33,12 @@ export function useMapJourney(
     setOpen(true);
     setPlaying(effective === "full");
   };
-  const close = () => {
+  const dismiss = () => {
     setPlaying(false);
     setOpen(false);
+  };
+  const close = () => {
+    dismiss();
     launcher.current?.focus({ preventScroll: true });
   };
   useEffect(() => {
@@ -57,7 +60,10 @@ export function useMapJourney(
   useEffect(() => {
     if (!open) return;
     const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !document.querySelector("dialog[open]")) {
+      if (
+        event.key === "Escape" &&
+        !document.querySelector("dialog[open], [popover]:popover-open")
+      ) {
         event.preventDefault();
         close();
       }
@@ -81,6 +87,7 @@ export function useMapJourney(
     launcher,
     start,
     close,
+    dismiss,
     pause: () => setPlaying(false),
     toggle: () => setPlaying((value) => !value),
     restart: () => {

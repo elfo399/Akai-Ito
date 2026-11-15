@@ -10,6 +10,7 @@ import {
   CalendarDays,
   ArrowUpRight,
   MapPinned,
+  X,
 } from "lucide-react";
 import {
   civilDayNumber,
@@ -28,6 +29,8 @@ import { useReducedMotion } from "../world-hooks";
 import "../world.css";
 import MapJourney, { useMapJourney } from "../components/MapJourney";
 import "../diary-map.css";
+import FloatingActions from "../components/FloatingActions";
+import "../world-actions.css";
 
 export default function World() {
   const query = useQuery({
@@ -67,7 +70,7 @@ function WorldDiary({ data }: { data: WorldData }) {
     if (focused) setDay(Math.min(last, civilDayNumber(focused.date)));
   }, [focused?.id]);
   const choose = (value: number) => {
-    journey.close();
+    journey.dismiss();
     setDay(Math.min(last, Math.max(first, value)));
   };
   const startJourney = () => {
@@ -174,9 +177,9 @@ function WorldDiary({ data }: { data: WorldData }) {
               <>
                 <h2>Le nostre foto cercano un posto.</h2>
                 <p>
-                  Apri un ricordo e scegli “Imposta posizione” sotto una
-                  fotografia. Anche gli scatti senza GPS possono trovare il loro
-                  punto nel mondo.
+                  Apri un ricordo e scegli “Imposta posizione” dal menu Azioni.
+                  Anche gli scatti senza GPS possono trovare il loro punto nel
+                  mondo.
                 </p>
                 <Link className="text-link" to="/timeline">
                   Sfoglia i ricordi <ArrowUpRight size={16} />
@@ -200,82 +203,6 @@ function WorldDiary({ data }: { data: WorldData }) {
               <span className="eyebrow">IL NOSTRO FILO, FINO A QUI</span>
               <time dateTime={date}>{formatDate(date)}</time>
             </div>
-            <button
-              type="button"
-              className="button secondary"
-              onClick={() => choose(last)}
-            >
-              <CalendarDays size={16} />
-              Torna a oggi
-            </button>
-          </div>
-          <label className="sr-only" htmlFor="world-date-range">
-            Mostra fotografie scattate fino alla data selezionata, inclusa
-          </label>
-          <input
-            id="world-date-range"
-            className="time-thread"
-            type="range"
-            min={first}
-            max={last}
-            step="1"
-            value={selected}
-            disabled={first === last}
-            aria-valuetext={formatDate(date)}
-            onChange={(e) => choose(Number(e.target.value))}
-          />
-          <div className="time-endpoints">
-            <span>{formatDate(dateFromDayNumber(first))}</span>
-            <span>Oggi</span>
-          </div>
-          <div className="world-controls">
-            <div className="playback-controls">
-              <button
-                className="button"
-                type="button"
-                ref={journey.launcher}
-                disabled={!journey.stops.length}
-                onClick={() => {
-                  if (!journey.open) startJourney();
-                  else if (reduced) journey.close();
-                  else journey.toggle();
-                }}
-              >
-                {playing ? <Pause size={17} /> : <Play size={17} />}
-                {playing
-                  ? "Pausa"
-                  : journey.open
-                    ? reduced
-                      ? "Esci dal viaggio"
-                      : "Riprendi la storia"
-                    : "Rivivi la nostra storia"}
-              </button>
-              <button
-                className="icon-button"
-                type="button"
-                aria-label="Riavvia dall’inizio"
-                disabled={!journey.stops.length}
-                onClick={() => {
-                  if (!journey.open) startJourney();
-                  else journey.restart();
-                }}
-              >
-                <RotateCcw size={19} />
-              </button>
-            </div>
-            <label className="world-date-input">
-              Un giorno preciso
-              <input
-                type="date"
-                min={dateFromDayNumber(first)}
-                max={today}
-                value={date}
-                onChange={(e) => {
-                  if (e.target.value && e.target.validity.valid)
-                    choose(civilDayNumber(e.target.value));
-                }}
-              />
-            </label>
           </div>
           <p
             className="world-counts"
@@ -351,6 +278,123 @@ function WorldDiary({ data }: { data: WorldData }) {
           )}
         </section>
       )}
+
+      <FloatingActions
+        label="Azioni della mappa"
+        title="Il mondo, un giorno alla volta"
+        eyebrow="IL NOSTRO ATLANTE"
+        triggerRef={journey.launcher}
+        panelClassName="world-actions-panel"
+        status={
+          journey.open
+            ? `Tappa ${journey.index + 1} di ${journey.stops.length}`
+            : undefined
+        }
+        icon={journey.open ? <MapPinned size={18} /> : undefined}
+      >
+        {(close) => (
+          <>
+            <button
+              className="memory-floating-action"
+              type="button"
+              disabled={!journey.stops.length}
+              onClick={() => {
+                close();
+                if (!journey.open) startJourney();
+                else if (reduced) journey.close();
+                else journey.toggle();
+              }}
+            >
+              {playing ? <Pause size={17} /> : <Play size={17} />}
+              {playing
+                ? "Pausa"
+                : journey.open
+                  ? reduced
+                    ? "Esci dal viaggio"
+                    : "Riprendi la storia"
+                  : "Rivivi la nostra storia"}
+            </button>
+            <button
+              className="memory-floating-action"
+              type="button"
+              disabled={!journey.stops.length}
+              onClick={() => {
+                close();
+                if (!journey.open) startJourney();
+                else journey.restart();
+              }}
+            >
+              <RotateCcw size={17} />
+              Riavvia dall’inizio
+            </button>
+            {journey.open && !reduced && (
+              <button
+                className="memory-floating-action"
+                type="button"
+                onClick={() => {
+                  close();
+                  journey.close();
+                }}
+              >
+                <X size={17} />
+                Esci dal viaggio
+              </button>
+            )}
+            <button
+              className="memory-floating-action"
+              type="button"
+              onClick={() => {
+                close();
+                choose(last);
+              }}
+            >
+              <CalendarDays size={17} />
+              Torna a oggi
+            </button>
+            <div className="world-action-dates">
+              <label htmlFor="world-date-range">
+                Il nostro filo, fino a qui
+              </label>
+              <time dateTime={date}>{formatDate(date)}</time>
+              <input
+                id="world-date-range"
+                className="time-thread"
+                type="range"
+                min={first}
+                max={last}
+                step="1"
+                value={selected}
+                disabled={first === last}
+                aria-label="Mostra fotografie scattate fino alla data selezionata, inclusa"
+                aria-valuetext={formatDate(date)}
+                onChange={(e) => choose(Number(e.target.value))}
+              />
+              <div className="time-endpoints">
+                <span>{formatDate(dateFromDayNumber(first))}</span>
+                <span>Oggi</span>
+              </div>
+              <label className="world-date-input">
+                Un giorno preciso
+                <input
+                  type="date"
+                  min={dateFromDayNumber(first)}
+                  max={today}
+                  value={date}
+                  onChange={(e) => {
+                    if (e.target.value && e.target.validity.valid)
+                      choose(civilDayNumber(e.target.value));
+                  }}
+                />
+              </label>
+              {reduced && (
+                <p className="tiny">
+                  Movimento automatico disattivato. Visita le tappe manualmente.
+                </p>
+              )}
+            </div>
+          </>
+        )}
+      </FloatingActions>
       <p className="map-privacy tiny">
         Le foto e le posizioni sono private. La cartografia esterna riceve
         richieste per le aree visualizzate, senza fotografie o richieste di

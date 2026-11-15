@@ -2,7 +2,21 @@
 
 Aggiornato il **15 novembre 2026**. Questo documento permette di riprendere il lavoro senza la chat precedente.
 
-## Consegna attuale — atlante, azioni flottanti e commenti
+## Consegna autorizzata — azioni flottanti sulla mappa
+
+Il 15 novembre 2026 l'utente ha chiesto di **pubblicare e unire a main il lavoro già pronto**, prima di iniziare una nuova proposta per la navigazione. Sono autorizzati commit, push e merge delle azioni flottanti della mappa, del componente condiviso e della documentazione su `style/world-floating-actions`. Questa autorizzazione sostituisce il precedente vincolo locale per questa modifica. Verificare SHA finale, Jenkins e deploy. La successiva revisione della navbar va preparata e mostrata in locale, separatamente da questa consegna.
+
+## Azioni flottanti anche sulla mappa
+
+L'utente ha chiesto di raccogliere anche i pulsanti della pagina mappa in un unico comando flottante. In **Il nostro mondo**, il pulsante **Azioni** segue lo scroll e contiene Rivivi/Pausa/Riprendi, Riavvia dall'inizio, Esci dal viaggio, Torna a oggi, cursore temporale e data precisa. Durante il viaggio mostra **Tappa N di M**. Sotto la mappa rimangono data corrente e conteggi; zoom, centratura e comandi contestuali delle foto e della scheda viaggio restano sulla mappa/scheda.
+
+Estratto `components/FloatingActions.tsx` dal menu dei ricordi per condividere presentazione, Popover API, focus, Escape e clic esterno. `MemoryActions` usa questo componente mantenendo il comportamento precedente. In `useMapJourney`, `dismiss()` ferma/chiude senza spostare il focus, mentre `close()` lo restituisce al pulsante: cambiare data dal pannello non sottrae il focus al campo o al cursore. Escape con il menu aperto chiude solo il menu; movimento ridotto preservato. File: `pages/World.tsx`, `components/MapJourney.tsx`, `components/MemoryActions.tsx`, nuovi `components/FloatingActions.tsx` e `world-actions.css`. Nessuna dipendenza, API o modifica dati.
+
+Branch **`style/world-floating-actions`**, da `main` `109ca94`; pubblicazione autorizzata nella consegna sopra. Preview Docker aggiornata e healthy su **http://localhost:3000/world**, con volume e dati demo preservati. Superati typecheck/lint, **94 test automatici**, build Docker, **38 controlli Chromium sulla mappa** e **34 di regressione sul menu ricordi**: scroll, focus/Escape/clic esterno, filtro data/cursore da tastiera, oggi, viaggio/pausa/riavvio/uscita, movimento ridotto e mappa vuota. Layout verificato a 375/430/768/1280 px e altezza ridotta a 667 px; screenshot desktop/mobile esaminati, nessun overflow o errore JavaScript, nessuna scrittura dati. Artefatti ignorati `.tools/world-actions-qa/`, relativi script/log e `.tools/world-actions-memory-regression.log`. Nessun test su dispositivi fisici o Safari/Firefox dichiarato.
+
+## Consegna completata — atlante, azioni flottanti e commenti
+
+Consegna completata: feature `875c155`, merge su `main` **`109ca94e06e2552ea15216b6b20d712ca71e2136`**, **Jenkins #8 SUCCESS**, 94 test e immagine corrispondente allo SHA distribuito. Verificati health e asset pubblici di atlante, azioni e commenti; API private ancora protette (401). I vincoli locali nei paragrafi storici sotto descrivono il lavoro prima di questa pubblicazione.
 
 Il 15 novembre 2026 l'utente ha autorizzato **push e merge su main di tutte le modifiche locali**, incluso questo handoff. La consegna parte da `style/diary-map`, basato su `main` `3216161`, e comprende la mappa in stile diario con terre più leggibili, il menu flottante delle azioni del ricordo, il nuovo campo commenti e la correzione del cleanup Leaflet. Questa autorizzazione sostituisce i precedenti vincoli di sola preview locale riportati nella cronologia sotto. Verificare con Git e Jenkins SHA finale, merge e deployment: `main` avvia la pipeline. Dati Docker e account demo non sono inclusi nel codice.
 
