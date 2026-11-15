@@ -553,6 +553,12 @@
 .detail-page .diary-page-number {
   font-size: 19px;
 }
+.diary-navigation-error {
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--red);
+}
 .detail-page .detail-tools {
   margin: 10px 0 22px;
   gap: 6px;

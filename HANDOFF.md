@@ -2,6 +2,33 @@
 
 Aggiornato il **15 novembre 2026**. Questo documento permette di riprendere il lavoro senza la chat precedente.
 
+## Consegna autorizzata: diario e Impostazioni
+
+Il 15 novembre 2026 l'utente ha chiesto **push di tutto e merge su main**, includendo la correzione dello sfogliamento, la riorganizzazione delle Impostazioni, i test e questo handoff. La consegna parte da `fix/album-diary-navigation`; usare `git log` e lo stato reale di Jenkins per verificare SHA finale, merge e deploy. I controlli locali sono conclusi: 77 test, typecheck, lint, build Docker, 23 controlli browser sul diario e 37 sulle Impostazioni. Dati e account Docker restano separati dal codice e non vengono pubblicati tramite Git.
+
+## Riorganizzazione Impostazioni — ultima richiesta
+
+Dopo la correzione del diario l'utente ha chiesto di riorganizzare la schermata Impostazioni. La pagina ora ha tre sezioni: **Il nostro diario** (nomi, data e copertina), **Il tuo account** (profilo/avatar e password), **Aspetto** (effetti e stagioni). Menu laterale su desktop, schede orizzontali su mobile, collegamento Cestino sempre disponibile nel menu. Titolo e spaziatura più compatti, copertina più visibile e pulsanti beige coerenti con quelli già approvati.
+
+Le schede supportano tastiera, frecce, Home/End e mantengono i campi non salvati passando da una sezione all'altra. Messaggi di successo/errore mostrati solo nella sezione pertinente. L'intensità degli effetti usa tre scelte con descrizione al posto del select; salvataggio locale automatico e rispetto del movimento ridotto del sistema invariati. API, dati e meccanismi di autenticazione non modificati.
+
+File: `apps/web/src/pages/Settings.tsx`, nuovo `apps/web/src/settings.css`, presentazione di `MotionSettings` in `apps/web/src/motion.tsx`. Nessuna dipendenza nuova. Lavoro sullo stesso branch `fix/album-diary-navigation`, insieme alla correzione sotto; push e merge autorizzati per entrambi gli interventi. Preview Docker aggiornata e healthy su **http://localhost:3000/settings**.
+
+Verifiche: typecheck, lint, **77 test automatici** e build Docker superati. **37 controlli Chromium**: sezioni, campi mantenuti, tastiera, selettore copertina, segnaposto senza copertina, feedback e payload di salvataggio diario/profilo, validazione/errore password, persistenza preferenze, movimento ridotto e assenza di overflow a 375, 430, 768, 1280 e 1440 px. Le scritture HTTP nel collaudo sono state simulate per preservare account, password e dati demo; preferenze browser ripristinate. Artefatti ignorati sotto `.tools/settings-qa/`; nessun collaudo su dispositivi fisici o Safari/Firefox.
+
+## Correzione locale dello sfogliamento — stato attuale
+
+L'ultima consegna UI è completata: commit `cb99926`, merge su `main` `712819c`, Jenkins #5 SUCCESS con immagine corrispondente allo SHA distribuito. Dopo questa consegna l'utente ha segnalato un bug aprendo un ricordo da organizzare e scegliendo Sfoglia: partiva una sequenza globale e, passando a un ricordo assegnato, il contatore cambiava da 1 di 5 a 1 di 1.
+
+La correzione è sul branch `fix/album-diary-navigation`, basato su `712819c`, e nella preview Docker healthy su **http://localhost:3000**. Il successivo push e merge sono autorizzati insieme alla riorganizzazione delle Impostazioni; verificare l'esito della pipeline sullo SHA consegnato.
+
+- I ricordi senza album non mostrano Sfoglia il diario e non attivano tastiera, swipe o richieste di una sequenza globale. I vecchi link `?browse=1` vengono ripuliti conservando gli altri parametri e il contesto di ritorno.
+- Lo sfogliamento richiede sempre l'ID dell'album. Prima di cambiare pagina verifica il dettaglio aggiornato: una pagina spostata in un altro album non viene aperta. Errori e pagine eliminate mantengono il ricordo corrente e consentono di aggiornare/riprovare.
+- Richieste duplicate bloccate; uscire durante un caricamento non provoca navigazioni tardive. Prima/ultima pagina e ricordo non più presente nella sequenza hanno stati espliciti.
+- File principali: `components/DiaryBrowser.tsx`, `refinements.css`, nuovo `apps/web/test/diary.test.ts`; `tsconfig.tools.json` abilita JSX per importare il componente nei test senza nuove dipendenze.
+
+Verifiche di questa correzione: typecheck, lint, **77 test automatici in 5 file** (6 nuovi sul diario), build Docker e **23 controlli browser Chromium** su desktop e mobile a 375 px. Provati navigazione ripetuta, tastiera/swipe, ritorno browser, album singolo, doppio comando, richiesta lenta/uscita, errore e retry, pagina spostata/eliminata tramite risposte simulate. Nessuna modifica ai dati per queste simulazioni. Artefatti ignorati: `.tools/diary-scope-qa/`, log build/test sotto `.tools/`.
+
 ## Rifinitura successiva alla consegna
 
 Dopo il merge `03f1d3b` e la build Jenkins #4 conclusa con SUCCESS, l'utente ha chiesto etichette stagionali più piccole, metadati meglio allineati e **Album** attivo nel menu quando si è dentro un ricordo. Le modifiche sono state prima pubblicate sul branch `fix/compact-memory-metadata` (`3a89e9e`). Il 15 novembre 2026 l'utente ha poi autorizzato la consegna completa delle rifiniture, incluso lo stile uniforme descritto sotto, con push e merge su `main` e conseguente pipeline Jenkins.
@@ -16,13 +43,13 @@ Dopo il push del commit `3a89e9e`, l'utente ha chiesto uno stile diverso e poi h
 
 Il progetto è un diario fotografico privato per due persone, con stile Scrapbook: carta crema, Polaroid, nastri adesivi, annotazioni e filo rosso. L'utente comunica in italiano e vuole vedere cambiamenti funzionanti, verificati nel browser e in Docker locale.
 
-**Stato del prodotto:** la revisione immersiva, gli album per singolo viaggio e le successive rifiniture sono implementati e verificati. L'ultima richiesta è pubblicare tutto e unire su `main`, inclusi pulsanti uniformi, metadati compatti e navigazione Album corretta. Non è richiesta una nuova riprogettazione.
+**Stato del prodotto:** la revisione immersiva, gli album per singolo viaggio e le successive rifiniture sono implementati e pubblicati. Il bug dello sfogliamento e la riorganizzazione delle Impostazioni descritti sopra sono implementati e verificati, con push e merge autorizzati dall'utente. Non è richiesta una nuova riprogettazione.
 
-**Consegna Git iniziale, completata:** codice e documentazione su `feat/immersive-experience`, push e merge su `main` (`03f1d3b`), con Jenkins #4 SUCCESS. **Consegna attuale autorizzata:** commit, push e merge su `main` delle rifiniture da `fix/compact-memory-metadata`. La pipeline può avviare il deploy sul Raspberry e va verificata sullo SHA corretto; per richieste successive seguire le nuove istruzioni dell'utente.
+**Consegne Git completate:** prima `feat/immersive-experience` su `main` (`03f1d3b`, Jenkins #4 SUCCESS), poi le rifiniture da `fix/compact-memory-metadata` (`712819c`, Jenkins #5 SUCCESS). La pipeline può avviare il deploy sul Raspberry e va verificata sullo SHA corretto; per richieste successive seguire le nuove istruzioni dell'utente.
 
 Repository: `https://github.com/elfo399/Akai-Ito.git`.
 Base da cui è iniziata questa revisione: `bd06b301250eee8f4a86eb0fa915ba226ca991aa` (`feat: add scrapbook redesign and interactive photo world`).
-Branch di lavoro: `feat/immersive-experience`. Il contenuto di questo handoff viene consegnato insieme alle modifiche; usare `git log` per leggere gli SHA finali, senza assumere che coincidano con quello di base.
+Branch della consegna attuale: `fix/album-diary-navigation`, da unire su `main`; `feat/immersive-experience` conserva la revisione iniziale. Verificare sempre `git status` e `git log` prima di riprendere.
 
 ## Riprendere su un altro PC
 

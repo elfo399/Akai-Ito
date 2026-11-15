@@ -44,6 +44,8 @@ Il dettaglio ha carta, timbro, una foto protagonista, racconto e fotografie succ
 
 Il comando **Sfoglia il diario** attiva `?browse=1`. Solo allora viene richiesta la sequenza cronologica attraverso l'API paginata esistente; vengono conservati soltanto ID, titolo, data e copertina. Non si scaricano tutti i dettagli o tutte le foto. I pulsanti preparano il ricordo successivo prima della navigazione. Sono presenti numero pagina, precedente/successivo, uscita, frecce della tastiera e swipe orizzontale sul racconto. Input, link, pulsanti, selezione di testo e dialoghi non vengono intercettati. Lo scroll verticale touch resta disponibile.
 
+Il comando compare soltanto se il ricordo appartiene a un album e la sequenza è sempre filtrata per quell'album. I ricordi da organizzare non hanno uno sfogliamento globale; i vecchi link `browse=1` vengono ripuliti. La pagina successiva viene verificata prima dell'apertura: se è stata spostata o eliminata, il diario rimane sulla pagina corrente e aggiorna la sequenza. Comandi duplicati, errori di caricamento e uscita durante una richiesta sono gestiti senza navigazioni tardive.
+
 ### Rivivi questo momento
 
 `PhotoCinema` è importato dinamicamente e apre un dialogo nativo a pieno schermo, con focus contenuto, Escape, restituzione del focus e blocco dello scroll sottostante. Usa le risorse `display`, mai gli originali. Decodifica la foto corrente, conserva la precedente durante il caricamento e precarica solo la prossima durante la riproduzione. Le immagini sono `object-fit: contain`, con un margine che assorbe lo zoom delicato (massimo 1,035×).
