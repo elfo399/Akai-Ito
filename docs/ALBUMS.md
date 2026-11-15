@@ -4,14 +4,16 @@ La navigazione è **Album → capitolo (es. Viaggi) → album con nome (es. Barc
 
 Le azioni del dettaglio sono raccolte nel pulsante flottante **Azioni**: da lì si apre **Sfoglia il diario**, si rivive il ricordo, si modifica o si gestiscono le posizioni delle foto. Durante lo sfogliamento il pulsante mostra il numero di pagina; tastiera e swipe restano disponibili. Il diario è proposto soltanto ai ricordi assegnati a un album, senza sequenze globali per quelli da organizzare. Stato di consegna in `HANDOFF.md`.
 
+Anche il singolo album ha un menu flottante **Azioni**: **Aggiungi un ricordo**, **Aggiungi ricordi esistenti**, **Modifica album** ed **Elimina album**. Le schede **Il diario/Le fotografie** restano sulla pagina. I dialoghi mantengono le conferme precedenti e restituiscono il focus al pulsante alla chiusura. Stato di pubblicazione in `HANDOFF.md`.
+
 ## Uso
 
 1. Aprire Album e scegliere Viaggi, poi **Nuovo viaggio**. Dare un nome e, se desiderato, una descrizione. Sono consentiti più viaggi con lo stesso nome, distinguibili dalle date dei ricordi.
-2. Nell'album scegliere **Aggiungi ricordi esistenti** e selezionare le pagine ancora da organizzare. L'assegnazione porta tutte le foto di ogni ricordo, senza duplicarle.
+2. Nell'album aprire **Azioni → Aggiungi ricordi esistenti** e selezionare le pagine ancora da organizzare. L'assegnazione porta tutte le foto di ogni ricordo, senza duplicarle.
 3. **Aggiungi un ricordo** apre l'editor con capitolo e album già selezionati. Nell'editor è anche possibile scegliere o creare un altro album.
 4. **Il diario** mostra soltanto i ricordi dell'album in ordine cronologico; **Le fotografie** mostra soltanto le sue foto. La sequenza di **Sfoglia il diario** nel dettaglio rimane limitata allo stesso album.
 5. Per spostare un ricordo cambiare Album da Modifica. Scegliendo Da organizzare viene tolta soltanto l'assegnazione. Cambiare capitolo azzera la selezione dell'album, evitando abbinamenti incoerenti.
-6. La matita dell'album cambia nome e descrizione. **Elimina solo l'album** rimuove la copertina: ricordi, foto e commenti rimangono disponibili nei ricordi da organizzare, compresi quelli nel cestino.
+6. **Azioni → Modifica album** cambia nome e descrizione. **Azioni → Elimina album**, dopo la conferma **Elimina solo l'album**, rimuove la copertina: ricordi, foto e commenti rimangono disponibili nei ricordi da organizzare, compresi quelli nel cestino.
 
 Le categorie esistenti restano capitoli. I vecchi ricordi non vengono attribuiti automaticamente a viaggi immaginati dal titolo o dal GPS: finché non sono assegnati, restano in **Ricordi da organizzare**. Il sistema supporta lo stesso livello di album con nome anche negli altri capitoli.
 

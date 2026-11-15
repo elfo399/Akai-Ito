@@ -22,6 +22,7 @@ import "./scrapbook.css";
 import "./world.css";
 import "./immersive.css";
 import "./refinements.css";
+import "./diary-navigation.css";
 import { MotionProvider, RouteViewport } from "./motion";
 import Detail from "./pages/Detail";
 import Timeline from "./pages/Timeline";

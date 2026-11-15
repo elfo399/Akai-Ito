@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowDownUp, Heart } from "lucide-react";
+import { Heart, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { categories } from "@akai/shared";
 import { api } from "../api";
 import type { MemoryList } from "../types";
@@ -15,6 +15,8 @@ import {
 } from "../components";
 import { TimelineThread, StoryEnding } from "../scrapbook";
 import { useKnotReveal, useReducedMotion } from "../motion";
+import FloatingActions from "../components/FloatingActions";
+import "../timeline-filters.css";
 export default function Timeline() {
   const [search, setSearch] = useSearchParams();
   const order = search.get("order") === "asc" ? "asc" : "desc",
@@ -29,6 +31,12 @@ export default function Timeline() {
     setSearch(next, { replace: true });
   };
   const ref = useRef<HTMLDivElement>(null);
+  const activeFilters = Number(Boolean(year)) + Number(Boolean(category));
+  const reset = () => {
+    const next = new URLSearchParams(search);
+    for (const key of ["year", "category", "order", "page"]) next.delete(key);
+    setSearch(next, { replace: true });
+  };
   const params = new URLSearchParams({
     order,
     page: String(page),
@@ -41,43 +49,87 @@ export default function Timeline() {
   });
   useKnotReveal(ref, query.data?.items.map((item) => item.id).join(":"));
   return (
-    <div className="page">
+    <div className="page timeline-page">
       <PageHeading
         eyebrow="IL NOSTRO DIARIO"
         title="I fili della nostra storia"
         subtitle="Ogni momento ci ha portati fin qui."
         action={<AddMemory />}
       />
-      <div className="filters paper">
-        <label className="inline-label">
-          Anno
-          <select value={year} onChange={(e) => update("year", e.target.value)}>
-            <option value="">Tutti gli anni</option>
-            {(query.data?.years ?? (year ? [year] : [])).map((y) => (
-              <option key={y}>{y}</option>
-            ))}
-          </select>
-        </label>
-        <label className="inline-label">
-          Capitolo
-          <select
-            value={category}
-            onChange={(e) => update("category", e.target.value)}
-          >
-            <option value="">Tutte le categorie</option>
-            {categories.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-        </label>
-        <button
-          className="text-link sort-button"
-          onClick={() => update("order", order === "desc" ? "asc" : "desc")}
-        >
-          <ArrowDownUp size={16} />
-          {order === "desc" ? "Dal più recente" : "Dall’inizio"}
-        </button>
-      </div>
+      <p className="timeline-filter-summary" role="status">
+        {[
+          year || (!category ? "Tutti i ricordi" : ""),
+          category,
+          order === "desc" ? "Dal più recente" : "Dall’inizio",
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </p>
+      <FloatingActions
+        label="Filtri della timeline"
+        title="Tra le nostre pagine"
+        eyebrow="SCEGLI COSA RILEGGERE"
+        triggerText="Filtri"
+        status={activeFilters ? `Filtri · ${activeFilters}` : undefined}
+        icon={<SlidersHorizontal size={18} />}
+        panelClassName="timeline-filters-panel"
+      >
+        {(close) => (
+          <>
+            <div className="timeline-filter-fields">
+              <div>
+                <label htmlFor="timeline-year">Anno</label>
+                <select
+                  id="timeline-year"
+                  value={year}
+                  onChange={(e) => update("year", e.target.value)}
+                >
+                  <option value="">Tutti gli anni</option>
+                  {(query.data?.years ?? (year ? [year] : [])).map((y) => (
+                    <option key={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="timeline-category">Capitolo</label>
+                <select
+                  id="timeline-category"
+                  value={category}
+                  onChange={(e) => update("category", e.target.value)}
+                >
+                  <option value="">Tutte le categorie</option>
+                  {categories.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="timeline-order">Ordine</label>
+                <select
+                  id="timeline-order"
+                  value={order}
+                  onChange={(e) => update("order", e.target.value)}
+                >
+                  <option value="desc">Dal più recente</option>
+                  <option value="asc">Dall’inizio</option>
+                </select>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="memory-floating-action timeline-filter-reset"
+              disabled={!activeFilters && order === "desc"}
+              onClick={() => {
+                reset();
+                close();
+              }}
+            >
+              <RotateCcw size={16} />
+              Azzera filtri
+            </button>
+          </>
+        )}
+      </FloatingActions>
       {query.isPending ? (
         <Loading />
       ) : query.error ? (

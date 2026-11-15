@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import {
+  Link as RouterLink,
+  useParams,
+  useSearchParams,
+  useNavigate,
+} from "react-router-dom";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -23,6 +28,7 @@ import {
 import { Pagination } from "./Timeline";
 import CollectionForm from "../components/CollectionForm";
 import CollectionPicker from "../components/CollectionPicker";
+import FloatingActions from "../components/FloatingActions";
 export default function Albums() {
   const { category, collectionId } = useParams();
   return collectionId ? (
@@ -291,31 +297,59 @@ function TripDiary({ id }: { id: string }) {
             {a.memoryCount} ricordi · {a.photoCount} fotografie
           </p>
         </div>
-        <div className="trip-tools">
-          <Link className="button" to={newMemory}>
-            <Plus size={17} />
-            Aggiungi un ricordo
-          </Link>
-          <button className="button secondary" onClick={() => setPicking(true)}>
-            <BookOpen size={17} />
-            Aggiungi ricordi esistenti
-          </button>
-          <button
-            className="icon-button"
-            aria-label="Modifica album"
-            onClick={() => setEditing(true)}
-          >
-            <Pencil size={18} />
-          </button>
-          <button
-            className="icon-button"
-            aria-label="Elimina album"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2 size={18} />
-          </button>
-        </div>
       </header>
+      <FloatingActions
+        label="Azioni dell’album"
+        title="Le pagine di questo album"
+        eyebrow="IL NOSTRO DIARIO"
+      >
+        {(close) => (
+          <>
+            <RouterLink
+              className="memory-floating-action"
+              to={newMemory}
+              onClick={close}
+            >
+              <Plus size={17} />
+              Aggiungi un ricordo
+            </RouterLink>
+            <button
+              type="button"
+              className="memory-floating-action"
+              onClick={() => {
+                close();
+                setPicking(true);
+              }}
+            >
+              <BookOpen size={17} />
+              Aggiungi ricordi esistenti
+            </button>
+            <button
+              type="button"
+              className="memory-floating-action"
+              onClick={() => {
+                close();
+                setEditing(true);
+              }}
+            >
+              <Pencil size={17} />
+              Modifica album
+            </button>
+            <div className="memory-actions-divider" />
+            <button
+              type="button"
+              className="memory-floating-action memory-trash-action"
+              onClick={() => {
+                close();
+                setDeleting(true);
+              }}
+            >
+              <Trash2 size={17} />
+              Elimina album
+            </button>
+          </>
+        )}
+      </FloatingActions>
       <nav className="collection-tabs" aria-label="Contenuti dell’album">
         <button
           className={tab === "diary" ? "active" : ""}

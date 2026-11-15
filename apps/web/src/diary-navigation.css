@@ -1,0 +1,326 @@
+/* The index lives along the binding, leaving the top of each page open. */
+.diary-shell {
+  --binding-width: 224px;
+}
+.diary-shell > main,
+.diary-shell > footer,
+.diary-shell > .layout-error {
+  margin-left: var(--binding-width);
+}
+.diary-shell > main {
+  min-height: calc(100dvh - 105px);
+}
+.diary-shell > footer {
+  max-width: none;
+  margin-top: 32px;
+}
+.diary-shell .diary-binding {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: start;
+  gap: 0;
+  width: var(--binding-width);
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 32px 24px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  background: transparent;
+}
+.diary-binding::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  bottom: 24px;
+  right: 0;
+  width: 4px;
+  border-left: 1px solid #c5ac8e55;
+  border-right: 1px solid #c5ac8e25;
+  pointer-events: none;
+}
+.diary-binding .brand {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 22px;
+  border: 0;
+  border-bottom: 1px solid #c5ac8e55;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+.diary-binding .brand-mark {
+  width: 70px;
+}
+.diary-binding .brand-letters {
+  font: 26px/1.1 var(--serif);
+  letter-spacing: 3px;
+  text-align: center;
+}
+.diary-binding .brand-letters small {
+  margin-top: 9px;
+  font:
+    8px/1.6 "DM Sans",
+    sans-serif;
+  letter-spacing: 0.3px;
+}
+.binding-title {
+  margin: 27px 0 16px 9px;
+}
+.binding-title > span {
+  font-size: 7px;
+  letter-spacing: 1.6px;
+  color: var(--muted);
+}
+.binding-title > p {
+  margin: 5px 0 0;
+  color: #705549;
+  font: 25px/1.2 var(--hand);
+}
+.diary-binding .desktop-nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin: 0 0 24px 9px;
+}
+.diary-binding .desktop-nav::before {
+  content: "";
+  position: absolute;
+  top: 21px;
+  bottom: 21px;
+  left: -8px;
+  border-left: 1px dashed #b95e5480;
+  pointer-events: none;
+}
+.diary-binding .desktop-nav a {
+  --bookmark-paper: #f1e5d1;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 53px;
+  padding: 10px 9px 10px 11px;
+  color: #78645a;
+  font-size: 12px;
+  transition:
+    transform 180ms ease,
+    color 180ms ease;
+}
+.diary-binding .desktop-nav a:nth-child(2) {
+  --bookmark-paper: #eedbd6;
+}
+.diary-binding .desktop-nav a:nth-child(3) {
+  --bookmark-paper: #e2e7d9;
+}
+.diary-binding .desktop-nav a:nth-child(4) {
+  --bookmark-paper: #dfe8e5;
+}
+.diary-binding .desktop-nav a:nth-child(5) {
+  --bookmark-paper: #e9e0d7;
+}
+.diary-binding .desktop-nav a::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border: 1px solid #bea78d60;
+  border-left: 3px solid #bea78d70;
+  border-radius: 2px 11px 11px 2px;
+  background: var(--bookmark-paper);
+  box-shadow: 1px 2px 3px #59443f08;
+  transform: rotate(-1deg);
+}
+.diary-binding .desktop-nav a:nth-child(even)::before {
+  transform: rotate(1deg);
+}
+.bookmark-number {
+  font: 12px var(--serif);
+  color: #9b8475;
+}
+.bookmark-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.bookmark-label svg {
+  flex-shrink: 0;
+  width: 15px;
+}
+.diary-binding .desktop-nav a.active {
+  transform: translateX(7px);
+  color: #9d3934;
+}
+.diary-binding .desktop-nav a.active::before {
+  border-left-color: #ae4c44;
+  box-shadow: 2px 4px 7px #59443f14;
+}
+.diary-binding .desktop-nav a.active::after {
+  content: "";
+  position: absolute;
+  left: -19px;
+  top: calc(50% - 3px);
+  bottom: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ae4c44;
+  box-shadow: 0 0 0 3px var(--cream);
+  transform: none;
+}
+.diary-binding .desktop-nav a:hover {
+  transform: translateX(7px);
+  color: #654a3e;
+}
+.diary-binding .header-user {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: auto;
+  padding: 18px 0 0;
+  border-top: 1px dashed #cbb79e;
+}
+.diary-binding .header-user .avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+.diary-binding .header-user .binding-user-name {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.binding-user-name small {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font: 15px var(--hand);
+}
+.diary-binding .header-user .icon-button {
+  min-width: 36px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.diary-shell
+  :is(.diary-binding a, .diary-binding button, .mobile-nav a):focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 4px;
+}
+@media (min-width: 1600px) {
+  .diary-shell {
+    --binding-width: 252px;
+  }
+  .diary-shell .diary-binding {
+    padding-inline: 32px;
+  }
+}
+@media (max-width: 1000px) {
+  .diary-shell > main,
+  .diary-shell > footer,
+  .diary-shell > .layout-error {
+    margin-left: 0;
+  }
+  .diary-shell .diary-binding {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    overflow: visible;
+    align-items: center;
+    padding: 21px 64px 10px;
+  }
+  .diary-binding::after,
+  .binding-title,
+  .diary-binding .desktop-nav {
+    display: none;
+  }
+  .diary-binding .brand {
+    align-items: center;
+    padding: 0;
+    gap: 3px;
+    transform: none;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  .diary-binding .brand-mark {
+    width: 45px;
+  }
+  .diary-binding .brand-letters {
+    font-size: 23px;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+  .diary-binding .brand-letters small {
+    display: none;
+  }
+  .diary-binding .header-user {
+    position: absolute;
+    top: 21px;
+    right: 16px;
+    gap: 1px;
+    padding: 0;
+    border: 0;
+  }
+  .diary-binding .header-user .binding-user-name {
+    display: none;
+  }
+  .diary-binding .header-user .avatar {
+    width: 27px;
+    height: 27px;
+  }
+  .diary-shell > main {
+    min-height: calc(100dvh - 200px);
+  }
+  .diary-shell > .mobile-nav {
+    gap: 4px;
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+    border-top: 1px solid #d5c3ac;
+    background: #faf2e7f5;
+  }
+  .diary-shell .mobile-nav a {
+    position: relative;
+    min-height: 54px;
+    border: 1px solid #d7c6b266;
+    border-top: 3px solid #d7c6b2;
+    border-radius: 3px 3px 7px 7px;
+    background: #f1e5d166;
+    color: #7b6558;
+    font-size: 9px;
+  }
+  .diary-shell .mobile-nav a:nth-child(2) {
+    border-top-color: #d8aaa0;
+  }
+  .diary-shell .mobile-nav a:nth-child(3) {
+    border-top-color: #b7c4a9;
+  }
+  .diary-shell .mobile-nav a:nth-child(4) {
+    border-top-color: #adc3bd;
+  }
+  .diary-shell .mobile-nav a:nth-child(5) {
+    border-top-color: #c7b6a5;
+  }
+  .diary-shell .mobile-nav a.active {
+    color: #a03c34;
+    border-bottom-color: #b96b5e;
+    background: #ecd9c8;
+  }
+  .diary-shell .mobile-nav a.active::after {
+    content: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .diary-binding .desktop-nav a {
+    transition: none;
+  }
+}
