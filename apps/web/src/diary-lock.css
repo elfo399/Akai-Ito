@@ -35,13 +35,26 @@ html[data-diary-shield="true"]
 html[data-diary-protected="true"]::view-transition {
   display: none;
 }
+html[data-diary-gate="true"],
+html[data-diary-gate="true"] body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
 .diary-gate {
-  min-height: 100svh;
+  position: fixed;
+  top: var(--visual-top, 0px);
+  left: 0;
+  right: 0;
+  height: var(--visual-height, 100dvh);
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
   display: grid;
   place-items: center;
   padding: max(24px, var(--safe-top)) max(22px, var(--safe-right))
     max(24px, var(--safe-bottom)) max(22px, var(--safe-left));
 }
+
 .diary-gate-card {
   width: min(470px, 100%);
   padding: 35px 30px;
@@ -179,5 +192,80 @@ html[data-diary-protected="true"]::view-transition {
   .protection-timeout {
     align-items: stretch;
     flex-direction: column;
+  }
+}
+@container (max-height: 720px) {
+  .diary-gate-card {
+    padding: 22px;
+    gap: 12px;
+  }
+  .diary-gate-card > .thread-mark {
+    width: 60px;
+  }
+  .diary-gate-card h1 {
+    font-size: 30px;
+  }
+  .diary-gate-card > .handwritten {
+    font-size: 22px;
+  }
+  .diary-gate-card form {
+    gap: 10px;
+  }
+}
+@container (max-height: 530px) {
+  .diary-gate-card {
+    padding: 16px 22px;
+    gap: 8px;
+  }
+  .diary-gate-card > .thread-mark {
+    width: 44px;
+  }
+  .diary-gate-card > .handwritten,
+  .diary-gate-card > svg:not(.thread-mark) {
+    display: none;
+  }
+  .diary-gate-card h1 {
+    font-size: 26px;
+  }
+  .diary-gate-card > p {
+    font-size: 12px;
+  }
+  .diary-gate-card .gate-logout {
+    min-height: 32px;
+    margin: 0;
+  }
+  .diary-gate--password .diary-gate-card > .thread-mark,
+  .diary-gate--password .diary-gate-card > .eyebrow,
+  .diary-gate--password .diary-gate-card > p:not([role]) {
+    display: none;
+  }
+  .diary-gate--password .diary-gate-card form {
+    gap: 8px;
+  }
+  .diary-gate--password .diary-gate-card label {
+    margin: 0;
+  }
+}
+@container (max-height: 360px) {
+  .diary-gate--password .diary-gate-card {
+    padding: 12px 18px;
+    gap: 6px;
+  }
+  .diary-gate--password .diary-gate-card h1 {
+    font-size: 22px;
+  }
+  .diary-gate--password .diary-gate-card form {
+    gap: 6px;
+  }
+  .diary-gate--password .diary-gate-card input {
+    padding: 8px 10px;
+    min-height: 40px;
+  }
+  .diary-gate--password .diary-gate-card .button {
+    min-height: 36px;
+    padding: 7px 10px;
+  }
+  .diary-gate--password .diary-gate-card .gate-logout {
+    min-height: 28px;
   }
 }

@@ -1,0 +1,187 @@
+.backup-settings {
+  display: grid;
+  gap: 22px;
+}
+.backup-settings .form-paper {
+  min-width: 0;
+}
+.backup-status-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.backup-status-line > span:last-child {
+  color: var(--muted);
+}
+.backup-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #b9a08b;
+}
+.backup-dot.active {
+  background: #69805c;
+}
+.backup-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 26px 0;
+}
+.backup-facts dt {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.backup-facts dd {
+  margin: 0;
+  font-size: 13px;
+}
+.backup-job {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: #f4eadc;
+  border-radius: 7px;
+}
+.backup-job > svg {
+  flex-shrink: 0;
+  color: var(--red);
+}
+.backup-job strong {
+  font-size: 12px;
+}
+.backup-job small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.7;
+  margin-top: 5px;
+  color: var(--muted);
+}
+.backup-job.failed {
+  border-color: #ba6e5f;
+}
+.backup-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.backup-settings fieldset {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  min-width: 0;
+}
+.backup-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.backup-fields label {
+  min-width: 0;
+}
+.backup-settings select {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 5px;
+}
+.backup-settings label small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 5px;
+  font-weight: 400;
+}
+.backup-settings .backup-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.backup-check input {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  margin-top: 3px;
+  accent-color: var(--red);
+}
+.backup-notice {
+  background: #f3e4cf;
+  border-left: 2px solid #b18b53;
+  padding: 14px;
+  border-radius: 4px;
+}
+.backup-path {
+  font-size: 10px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.backup-path span {
+  display: block;
+  margin-top: 5px;
+}
+.backup-rule {
+  border-top: 1px dashed var(--line);
+  margin: 25px 0;
+}
+.backup-settings h3 {
+  font: 23px var(--serif);
+  margin: 20px 0 12px;
+}
+.backup-key {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.backup-key svg {
+  flex-shrink: 0;
+}
+.backup-time {
+  max-width: 220px;
+}
+.backup-retention {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.backup-configuration .tiny {
+  line-height: 1.8;
+  margin: 12px 0 20px;
+}
+.settings-page .backup-settings .button {
+  min-height: 44px;
+}
+.backup-settings .dialog {
+  max-width: 480px;
+}
+.backup-settings .dialog form {
+  display: grid;
+  gap: 18px;
+}
+@media (max-width: 620px) {
+  .backup-fields,
+  .backup-facts {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .backup-retention {
+    gap: 8px;
+  }
+  .backup-retention label {
+    font-size: 10px;
+  }
+  .backup-tools {
+    align-items: stretch;
+  }
+  .backup-tools .button {
+    width: 100%;
+  }
+}

@@ -140,12 +140,15 @@ if [[ "$REQUIRE_MOUNT" == true ]]; then
     if [[ -n ${BACKUP_EXPECTED_SOURCE:-} ]]; then
         [[ "$(findmnt -n -o SOURCE -T "$TARGET")" == "$BACKUP_EXPECTED_SOURCE" ]] || fail wrong_mount_source
     fi
-elif [[ ${BACKUP_TEST_MODE:-false} != true ]]; then fail external_mount_required; fi
+    if [[ -n ${BACKUP_EXPECTED_UUID:-} ]]; then
+        [[ "$(findmnt -n -o UUID -T "$TARGET")" == "$BACKUP_EXPECTED_UUID" ]] || fail wrong_mount_uuid
+    fi
+elif [[ ${BACKUP_TEST_MODE:-false} != true && ${BACKUP_ALLOW_LOCAL_DESTINATION:-false} != true ]]; then fail external_mount_required; fi
 for setting in BACKUP_KEEP_DAILY BACKUP_KEEP_WEEKLY BACKUP_KEEP_MONTHLY BACKUP_MIN_FREE_MB BACKUP_HEALTH_TIMEOUT; do
     value=${!setting:-}; [[ -z "$value" || "$value" =~ ^[0-9]{1,7}$ ]] || fail invalid_numeric_configuration
     [[ -z "$value" ]] || printf -v "$setting" '%d' "$((10#$value))"
 done
-for setting in BACKUP_AUTO_RETENTION BACKUP_VERIFY_READ_DATA BACKUP_KEEP_TEST_VOLUME BACKUP_TEST_MODE; do
+for setting in BACKUP_AUTO_RETENTION BACKUP_VERIFY_READ_DATA BACKUP_KEEP_TEST_VOLUME BACKUP_TEST_MODE BACKUP_ALLOW_LOCAL_DESTINATION; do
     value=${!setting:-false}; [[ "$value" == true || "$value" == false ]] || fail invalid_boolean_configuration
 done
 (( ${BACKUP_HEALTH_TIMEOUT:-180} > 0 )) || fail invalid_health_timeout

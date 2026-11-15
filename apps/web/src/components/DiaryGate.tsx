@@ -31,7 +31,10 @@ export default function DiaryGate() {
     }
   };
   return (
-    <main className="diary-gate" aria-busy={busy}>
+    <main
+      className={"diary-gate" + (passwordMode ? " diary-gate--password" : "")}
+      aria-busy={busy}
+    >
       <section className="paper diary-gate-card">
         <ThreadMark />
         <p className="eyebrow">赤い糸 — Akai Ito</p>
@@ -39,7 +42,9 @@ export default function DiaryGate() {
         <LockKeyhole size={28} strokeWidth={1} />
         <h1>
           {locked
-            ? "Il nostro diario è protetto."
+            ? passwordMode
+              ? "Sblocca con la password"
+              : "Il nostro diario è protetto."
             : "Custodiamo i nostri ricordi."}
         </h1>
         {!locked ? (
